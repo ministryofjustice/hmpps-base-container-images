@@ -67,11 +67,21 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Build local image for scanning
+        uses: docker/build-push-action@v5
+        with:
+          context: ./images/${{ matrix.image }}
+          platforms: linux/amd64
+          push: false
+          load: true
+          tags: hmpps-base-${{ matrix.image }}:scan
+          cache-from: type=gha
+
       - name: Run Trivy vulnerability scanner (table output)
         id: trivy-vuln-scan
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-base-${{ matrix.image }}:${{ github.sha }}
+          image-ref: hmpps-base-${{ matrix.image }}:scan
           format: 'table'
           exit-code: '0'
           ignore-unfixed: true
@@ -85,7 +95,7 @@ jobs:
         # if: github.ref == 'refs/heads/main'
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-base-${{ matrix.image }}:${{ github.sha }}
+          image-ref: hmpps-base-${{ matrix.image }}:scan
           ignore-unfixed: true
           vuln-type: 'os,library'
           scanners: 'vuln'
