@@ -55,28 +55,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build container image
+      - name: Build and push container image
         uses: docker/build-push-action@v5
         with:
           context: ./images/${{ matrix.image }}
           platforms: linux/amd64,linux/arm64
           pull: true
-          push: false
-          tags: |
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-base-${{ matrix.image }}:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Push container image to repository
-        # Only push to repo if on main branch
-        # if: github.ref == 'refs/heads/main'
-        uses: docker/build-push-action@v5
-        with:
-          context: ./images/${{ matrix.image }}
-          platforms: linux/amd64,linux/arm64
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          push: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -95,7 +82,7 @@ jobs:
 
       - name: Run Trivy vulnerability scanner (SARIF output)
         # Only need SARIF results if on main branch
-        # if: github.ref == 'refs/heads/main'
+        # if: github.ref == 'refs/heads/main'
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-base-${{ matrix.image }}:${{ github.sha }}
