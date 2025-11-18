@@ -109,7 +109,7 @@ jobs:
       - name: Upload Trivy scan results to GitHub Security tab
         # Only upload results if on main branch
         # if: github.ref == 'refs/heads/main'
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: 'trivy-results-${{ matrix.image }}.sarif'
 
@@ -123,15 +123,17 @@ jobs:
           payload: |
             {
               "channel": "${{ vars.SECURITY_ALERTS_SLACK_CHANNEL_ID }}",
+              "text": "🔨 ${{ matrix.image }} Image Build ${{ job.status == 'failure' && 'Failed' || 'Completed' }} - ${{ github.workflow }} in ${{ github.repository }}",
               "attachments": [
                 {
                   "color": "${{ job.status == 'failure' && 'danger' || 'good' }}",
+                  "fallback": "${{ matrix.image }} Image Build ${{ job.status == 'failure' && 'Failed' || 'Completed' }} - ${{ github.workflow }} in ${{ github.repository }}",
                   "blocks": [
                     {
                       "type": "header",
                       "text": {
                         "type": "plain_text",
-                        "text": "🔨 Base Image Build ${{ job.status == 'failure' && 'Failed' || 'Completed' }}"
+                        "text": "🔨 ${{ matrix.image }} Image Build ${{ job.status == 'failure' && 'Failed' || 'Completed' }}"
                       }
                     },
                     {
