@@ -115,7 +115,7 @@ jobs:
 
       - name: Slack notification
         id: slack
-        # if: ${{ failure() }}
+        # if: ${{ failure() }}
         uses: slackapi/slack-github-action@v2
         with:
           method: chat.postMessage
@@ -123,5 +123,52 @@ jobs:
           payload: |
             {
               "channel": "${{ vars.SECURITY_ALERTS_SLACK_CHANNEL_ID }}",
-              "text": "_Job:_ ${{ github.job }}\n_Status:_ ${{ job.status }}\n_Workflow:_ ${{ github.workflow }}\n_Repo:_ ${{ github.repository }}\n<https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View on github>\n"
+              "attachments": [
+                {
+                  "color": "${{ job.status == 'failure' && 'danger' || 'good' }}",
+                  "blocks": [
+                    {
+                      "type": "header",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "🔨 Base Image Build ${{ job.status == 'failure' && 'Failed' || 'Completed' }}"
+                      }
+                    },
+                    {
+                      "type": "section",
+                      "fields": [
+                        {
+                          "type": "mrkdwn",
+                          "text": "*Workflow:*\n${{ github.workflow }}"
+                        },
+                        {
+                          "type": "mrkdwn",
+                          "text": "*Repository:*\n${{ github.repository }}"
+                        },
+                        {
+                          "type": "mrkdwn",
+                          "text": "*Branch:*\n${{ github.ref_name }}"
+                        },
+                        {
+                          "type": "mrkdwn",
+                          "text": "*Status:*\n${{ job.status }}"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "actions",
+                      "elements": [
+                        {
+                          "type": "button",
+                          "text": {
+                            "type": "plain_text",
+                            "text": "View Run"
+                          },
+                          "url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
             }
