@@ -113,17 +113,15 @@ jobs:
         with:
           sarif_file: 'trivy-results-${{ matrix.image }}.sarif'
 
-  notify:
-    name: Workflow Summary
-    runs-on: ubuntu-latest
-    needs: build-scan-push
-    if: always() # && github.ref == 'refs/heads/main'
-    steps:
-      - name: Workflow status
-        run: |
-          if [[ "${{ needs.build-scan-push.result }}" == "success" ]]; then
-            echo "✅ All base images built and pushed successfully"
-          else
-            echo "❌ Some base image builds failed"
-            exit 1
-          fi
+      - name: Slack notification
+        id: slack
+        # if: ${{ failure() }}
+        uses: slackapi/slack-github-action@v2
+        with:
+          channel-id: ${{ vars.SECURITY_ALERTS_SLACK_CHANNEL_ID }}
+          payload: |
+            {
+              "text": "_Job:_ ${{ github.job }}\n_Status:_ ${{ job.status }}\n_Workflow:_ ${{ github.workflow }}\n_Repo:_ ${{ github.repository }}\n<https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View on github>\n"
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
