@@ -123,7 +123,7 @@ jobs:
           payload: |
             {
               "channel": "${{ vars.SECURITY_ALERTS_SLACK_CHANNEL_ID }}",
-              "text": "🔨 ${{ matrix.image }} Image Build ${{ job.status == 'failure' && 'Failed' || 'Completed' }} - ${{ github.workflow }} in ${{ github.repository }}",
+              "text": "Base image build notification for ${{ github.repository }}",
               "attachments": [
                 {
                   "color": "${{ job.status == 'failure' && 'danger' || 'good' }}",
