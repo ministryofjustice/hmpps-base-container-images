@@ -115,7 +115,7 @@ jobs:
 
       - name: Slack notification
         id: slack
-        # if: ${{ failure() }}
+        if: ${{ failure() }}
         uses: slackapi/slack-github-action@v2
         with:
           method: chat.postMessage
@@ -123,17 +123,17 @@ jobs:
           payload: |
             {
               "channel": "${{ vars.SECURITY_ALERTS_SLACK_CHANNEL_ID }}",
-              "text": "Base image build notification for ${{ github.repository }}",
+              "text": "Base image build failed for ${{ github.repository }}",
               "attachments": [
                 {
-                  "color": "${{ job.status == 'failure' && 'danger' || 'good' }}",
-                  "fallback": "${{ matrix.image }} Image Build ${{ job.status == 'failure' && 'Failed' || 'Completed' }} - ${{ github.workflow }} in ${{ github.repository }}",
+                  "color": "danger",
+                  "fallback": "${{ matrix.image }} Image Build Failed - ${{ github.workflow }} in ${{ github.repository }}",
                   "blocks": [
                     {
                       "type": "header",
                       "text": {
                         "type": "plain_text",
-                        "text": "🔨 ${{ matrix.image }} Image Build ${{ job.status == 'failure' && 'Failed' || 'Completed' }}"
+                        "text": "🔨 ${{ matrix.image }} Image Build Failed"
                       }
                     },
                     {
