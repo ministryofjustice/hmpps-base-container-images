@@ -1,20 +1,20 @@
 # HMPPS Java Base Image (Temurin Alpine variant)
-ARG JAVA_BASE_IMAGE=eclipse-temurin
-ARG JAVA_BASE_TAG=21-jre-alpine
-FROM ${JAVA_BASE_IMAGE}:${JAVA_BASE_TAG}
+ARG BASE_IMAGE=eclipse-temurin
+ARG BASE_TAG=21-jre-alpine
+FROM ${BASE_IMAGE}:${BASE_TAG}
 
 # Re-declare args in-stage for labels
-ARG JAVA_BASE_IMAGE
-ARG JAVA_BASE_TAG
+ARG BASE_IMAGE
+ARG BASE_TAG
 
 # Metadata
 LABEL org.opencontainers.image.title="HMPPS Java Base Image (Alpine)"
 LABEL org.opencontainers.image.description="Base container image for Java applications in HMPPS (Alpine variant)"
 LABEL org.opencontainers.image.source="https://github.com/ministryofjustice/hmpps-base-container-images"
 LABEL org.opencontainers.image.vendor="Ministry of Justice"
-LABEL hmpps.java.base_variant="${JAVA_BASE_TAG}"
-LABEL hmpps.java.base_image="${JAVA_BASE_IMAGE}"
-LABEL org.opencontainers.image.base.name="${JAVA_BASE_IMAGE}:${JAVA_BASE_TAG}"
+LABEL hmpps.java.base_variant="${BASE_TAG}"
+LABEL hmpps.java.base_image="${BASE_IMAGE}"
+LABEL org.opencontainers.image.base.name="${BASE_IMAGE}:${BASE_TAG}"
 
 WORKDIR /app
 
