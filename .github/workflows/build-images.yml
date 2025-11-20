@@ -91,8 +91,7 @@ jobs:
           load: true
           tags: hmpps-${{ matrix.base_image }}-${{ matrix.base_tag }}-${{ matrix.os }}:scan
           build-args: |
-            JAVA_BASE_TAG=${{ matrix.base_tag }}
-            JAVA_BASE_IMAGE=${{ matrix.base_image }}
+            BASE_TAG=${{ matrix.base_tag }}
           cache-from: type=gha
 
       - name: Run Trivy vulnerability scanner (table output)
@@ -120,8 +119,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            JAVA_BASE_TAG=${{ matrix.base_tag }}
-            JAVA_BASE_IMAGE=${{ matrix.base_image }}
+            BASE_TAG=${{ matrix.base_tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
