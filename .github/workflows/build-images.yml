@@ -146,10 +146,15 @@ jobs:
         run: |
           file="trivy-results-${{ matrix.base_image }}-${{ matrix.base_tag }}.sarif"
           annotated="trivy-results-annotated-${{ matrix.base_image }}-${{ matrix.base_tag }}.sarif"
-          jq --arg variant "${{ matrix.base_image }}:${{ matrix.base_tag }}" '
+          # Build identifier: date for scheduled runs, short SHA otherwise
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            BUILD_ID="$(date -u +%Y%m%d)"
+          else
+            BUILD_ID="${GITHUB_SHA::7}"
+          fi
+          jq --arg variant "${{ matrix.base_image }}:${{ matrix.base_tag }}" --arg build_id "$BUILD_ID" '
             .runs[] |= (
-              .tool.driver.name = (.tool.driver.name + " [" + $variant + "]")
-              | .automationDetails = { id: $variant }
+              .automationDetails = { id: ($variant + "@" + $build_id) }
             )
           ' "$file" > "$annotated"
           mv "$annotated" "$file"
@@ -160,6 +165,7 @@ jobs:
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: 'trivy-results-${{ matrix.base_image }}-${{ matrix.base_tag }}.sarif'
+          category: ${{ matrix.base_image }}:${{ matrix.base_tag }}
 
       - name: Slack notification
         id: slack
