@@ -17,7 +17,6 @@ LABEL hmpps.node.base_variant="${NODE_BASE_TAG}"
 LABEL hmpps.node.base_image="${NODE_BASE_IMAGE}"
 LABEL org.opencontainers.image.base.name="${NODE_BASE_IMAGE}:${NODE_BASE_TAG}"
 
-WORKDIR /app
 RUN apt update && apt install -y git && rm -rf /var/lib/apt/lists/*
 ARG APP_UID=2000
 ARG APP_GID=2000
@@ -25,4 +24,6 @@ RUN addgroup -g ${APP_GID} -S appgroup && \
     adduser -u ${APP_UID} -S appuser -G appgroup
     
 # Ensure the workdir is owned by the unprivileged user before switching
+WORKDIR /app
 RUN chown -R 2000:2000 /app
+USER 2000
