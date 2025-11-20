@@ -44,9 +44,12 @@ jobs:
           - base_image: node
             base_tag: 25-alpine
             os: alpine
-          - base_image: ghcr-astral-sh-uv
+          - base_image: python
             base_tag: python3.13
             os: alpine
+          - base_image: python
+            base_tag: python3.13
+            os: bookworm
     permissions:
       contents: read
       packages: write
