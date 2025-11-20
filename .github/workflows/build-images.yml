@@ -67,11 +67,12 @@ jobs:
           flavor: |
             latest=true
           tags: |
-            type=schedule,pattern={{date 'YYYYMMDD'}}
-            type=ref,event=branch
-            type=ref,event=tag
-            type=ref,event=pr
-            type=sha
+            # Prefix dynamic tags with the variant to prevent overwrites between matrix entries
+            type=schedule,pattern={{date 'YYYYMMDD'}},prefix=${{ matrix.base_tag }}-
+            type=ref,event=branch,prefix=${{ matrix.base_tag }}-
+            type=ref,event=tag,prefix=${{ matrix.base_tag }}-
+            type=ref,event=pr,prefix=${{ matrix.base_tag }}-
+            type=sha,prefix=${{ matrix.base_tag }}-
             type=raw,value=${{ matrix.base_tag }}
 
       - name: Log in to GitHub Container Registry
