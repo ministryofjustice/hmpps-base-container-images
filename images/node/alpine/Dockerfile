@@ -30,6 +30,6 @@ RUN ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezo
 # Apply security upgrades
 RUN apk upgrade --no-cache
 
-USER ${APP_UID}
+# USER ${APP_UID}
 
 WORKDIR /app
