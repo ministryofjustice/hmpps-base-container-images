@@ -81,7 +81,7 @@ RUN ./gradlew --no-daemon assemble
 FROM ghcr.io/ministryofjustice/hmpps-eclipse-temurin:21-jre-jammy
 WORKDIR /app
 COPY --from=build /src/build/libs/app.jar ./app.jar
-USER appuser
+USER 2000
 CMD ["java", "-jar", "app.jar"]
 ```
 

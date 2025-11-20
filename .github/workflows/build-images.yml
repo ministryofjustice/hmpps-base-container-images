@@ -94,7 +94,7 @@ jobs:
 
       - name: Run Trivy vulnerability scanner (table output)
         id: trivy-vuln-scan
-        uses: aquasecurity/trivy-action@v0.33.1
+        uses: aquasecurity/trivy-action@0.33.1
         if: github.ref != 'refs/heads/initial-commit'
         with:
           image-ref: hmpps-${{ matrix.base_image }}-${{ matrix.base_tag }}-${{ matrix.os }}:scan
@@ -123,7 +123,7 @@ jobs:
       - name: Run Trivy vulnerability scanner (SARIF output)
         id: trivy-sarif
         if: github.ref == 'refs/heads/initial-commit'
-        uses: aquasecurity/trivy-action@v0.33.1
+        uses: aquasecurity/trivy-action@0.33.1
         with:
           image-ref: hmpps-${{ matrix.base_image }}-${{ matrix.base_tag }}-${{ matrix.os }}:scan
           ignore-unfixed: true
