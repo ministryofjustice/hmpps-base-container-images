@@ -89,7 +89,9 @@ jobs:
           push: false
           load: true
           tags: hmpps-${{ matrix.base_image }}-${{ matrix.base_tag }}-${{ matrix.os }}:scan
-          build-args: ${{ matrix.base_image == 'eclipse-temurin' && format('JAVA_BASE_TAG={0}\nJAVA_BASE_IMAGE={1}', matrix.base_tag, matrix.base_image) || '' }}
+          build-args: |
+            JAVA_BASE_TAG=${{ matrix.base_tag }}
+            JAVA_BASE_IMAGE=${{ matrix.base_image }}
           cache-from: type=gha
 
       - name: Run Trivy vulnerability scanner (table output)
@@ -116,7 +118,9 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: ${{ matrix.base_image == 'eclipse-temurin' && format('JAVA_BASE_TAG={0}\nJAVA_BASE_IMAGE={1}', matrix.base_tag, matrix.base_image) || '' }}
+          build-args: |
+            JAVA_BASE_TAG=${{ matrix.base_tag }}
+            JAVA_BASE_IMAGE=${{ matrix.base_image }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
