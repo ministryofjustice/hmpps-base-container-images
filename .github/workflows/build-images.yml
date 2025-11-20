@@ -47,9 +47,6 @@ jobs:
           - base_image: python
             base_tag: python3.13
             os: alpine
-          - base_image: python
-            base_tag: python3.13
-            os: bookworm
     permissions:
       contents: read
       packages: write
