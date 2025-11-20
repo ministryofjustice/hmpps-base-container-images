@@ -3,7 +3,7 @@ name: Build Base Container Images
 on:
   push:
     branches:
-      - initial-commit
+      - main
   pull_request:
   schedule:
     # Rebuild daily at 5 AM UTC (weekdays only)
@@ -98,7 +98,7 @@ jobs:
       - name: Run Trivy vulnerability scanner (table output)
         id: trivy-vuln-scan
         uses: aquasecurity/trivy-action@0.33.1
-        if: github.ref != 'refs/heads/initial-commit'
+        if: github.ref != 'refs/heads/main'
         with:
           image-ref: hmpps-${{ matrix.base_image }}-${{ matrix.base_tag }}-${{ matrix.os }}:scan
           format: 'table'
@@ -110,7 +110,7 @@ jobs:
           timeout: 15m
 
       - name: Build and push container image
-        if: github.ref == 'refs/heads/initial-commit' || github.event_name == 'schedule'
+        if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
         uses: docker/build-push-action@v5
         with:
           context: ./images/${{ matrix.base_image }}/${{ matrix.os }}
@@ -127,7 +127,7 @@ jobs:
 
       - name: Run Trivy vulnerability scanner (SARIF output)
         id: trivy-sarif
-        if: github.ref == 'refs/heads/initial-commit'
+        if: github.ref == 'refs/heads/main'
         uses: aquasecurity/trivy-action@0.33.1
         with:
           image-ref: hmpps-${{ matrix.base_image }}-${{ matrix.base_tag }}-${{ matrix.os }}:scan
@@ -142,7 +142,7 @@ jobs:
           timeout: 15m
 
       - name: Upload Trivy scan results to GitHub Security tab
-        if: github.ref == 'refs/heads/initial-commit' && steps.trivy-sarif.outcome == 'success' && hashFiles(format('trivy-results-{0}.sarif', matrix.base_image)) != ''
+        if: github.ref == 'refs/heads/main' && steps.trivy-sarif.outcome == 'success' && hashFiles(format('trivy-results-{0}.sarif', matrix.base_image)) != ''
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: 'trivy-results-${{ matrix.base_image }}.sarif'
