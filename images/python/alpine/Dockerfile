@@ -17,7 +17,9 @@ LABEL hmpps.node.base_variant="${NODE_BASE_TAG}"
 LABEL hmpps.node.base_image="${NODE_BASE_IMAGE}"
 LABEL org.opencontainers.image.base.name="${NODE_BASE_IMAGE}:${NODE_BASE_TAG}"
 
-RUN apt update && apt install -y git && rm -rf /var/lib/apt/lists/*
+# Apply security upgrades last for better caching
+RUN apk upgrade --no-cache
+
 ARG APP_UID=2000
 ARG APP_GID=2000
 RUN addgroup -g ${APP_GID} -S appgroup && \
