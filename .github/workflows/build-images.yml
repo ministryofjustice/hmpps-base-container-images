@@ -3,7 +3,6 @@ name: Build Base Container Images
 on:
   push:
     branches:
-      - main
       - initial-commit
   pull_request:
   schedule:
@@ -14,14 +13,37 @@ on:
 env:
   REGISTRY: ghcr.io
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-scan-push:
     name: Build-Scan-Push
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        image: [java, node]
+        include:
+          - base_image: eclipse-temurin
+            base_tag: 21-jre-jammy
+            os: ubuntu
+          - base_image: eclipse-temurin
+            base_tag: 25-jre-jammy
+            os: ubuntu
+          - base_image: eclipse-temurin
+            base_tag: 21-jre-alpine
+            os: alpine
+          - base_image: eclipse-temurin
+            base_tag: 25-jre-alpine
+            os: alpine
+          - base_image: node
+            base_tag: 24-alpine
+            os: alpine
+          - base_image: node
+            base_tag: 25-alpine
+            os: alpine
     permissions:
       contents: read
       packages: write
@@ -31,6 +53,9 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -38,7 +63,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-base-${{ matrix.image }}
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.base_image }}
           flavor: |
             latest=true
           tags: |
@@ -47,6 +72,7 @@ jobs:
             type=ref,event=tag
             type=ref,event=pr
             type=sha
+            type=raw,value=${{ matrix.base_tag }}
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -55,33 +81,23 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push container image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./images/${{ matrix.image }}
-          platforms: linux/amd64,linux/arm64
-          pull: true
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
       - name: Build local image for scanning
         uses: docker/build-push-action@v5
         with:
-          context: ./images/${{ matrix.image }}
+          context: ./images/${{ matrix.base_image }}/${{ matrix.os }}
           platforms: linux/amd64
           push: false
           load: true
-          tags: hmpps-base-${{ matrix.image }}:scan
+          tags: hmpps-${{ matrix.base_image }}-${{ matrix.base_tag }}-${{ matrix.os }}:scan
+          build-args: ${{ matrix.base_image == 'eclipse-temurin' && format('JAVA_BASE_TAG={0}\nJAVA_BASE_IMAGE={1}', matrix.base_tag, matrix.base_image) || '' }}
           cache-from: type=gha
 
       - name: Run Trivy vulnerability scanner (table output)
         id: trivy-vuln-scan
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.33.1
+        if: github.ref != 'refs/heads/initial-commit'
         with:
-          image-ref: hmpps-base-${{ matrix.image }}:scan
+          image-ref: hmpps-${{ matrix.base_image }}-${{ matrix.base_tag }}-${{ matrix.os }}:scan
           format: 'table'
           exit-code: '0'
           ignore-unfixed: true
@@ -90,28 +106,41 @@ jobs:
           severity: 'CRITICAL,HIGH'
           timeout: 15m
 
-      - name: Run Trivy vulnerability scanner (SARIF output)
-        # Only need SARIF results if on main branch
-        # if: github.ref == 'refs/heads/main'
-        uses: aquasecurity/trivy-action@master
+      - name: Build and push container image
+        if: github.ref == 'refs/heads/initial-commit' || github.event_name == 'schedule'
+        uses: docker/build-push-action@v5
         with:
-          image-ref: hmpps-base-${{ matrix.image }}:scan
+          context: ./images/${{ matrix.base_image }}/${{ matrix.os }}
+          platforms: linux/amd64,linux/arm64
+          pull: true
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: ${{ matrix.base_image == 'eclipse-temurin' && format('JAVA_BASE_TAG={0}\nJAVA_BASE_IMAGE={1}', matrix.base_tag, matrix.base_image) || '' }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run Trivy vulnerability scanner (SARIF output)
+        id: trivy-sarif
+        if: github.ref == 'refs/heads/initial-commit'
+        uses: aquasecurity/trivy-action@v0.33.1
+        with:
+          image-ref: hmpps-${{ matrix.base_image }}-${{ matrix.base_tag }}-${{ matrix.os }}:scan
           ignore-unfixed: true
           vuln-type: 'os,library'
           scanners: 'vuln'
           severity: 'CRITICAL,HIGH'
           exit-code: '0'
           format: 'sarif'
-          output: 'trivy-results-${{ matrix.image }}.sarif'
+          output: 'trivy-results-${{ matrix.base_image }}.sarif'
           limit-severities-for-sarif: true
           timeout: 15m
 
       - name: Upload Trivy scan results to GitHub Security tab
-        # Only upload results if on main branch
-        # if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/initial-commit' && steps.trivy-sarif.outcome == 'success' && hashFiles(format('trivy-results-{0}.sarif', matrix.base_image)) != ''
         uses: github/codeql-action/upload-sarif@v4
         with:
-          sarif_file: 'trivy-results-${{ matrix.image }}.sarif'
+          sarif_file: 'trivy-results-${{ matrix.base_image }}.sarif'
 
       - name: Slack notification
         id: slack
@@ -127,13 +156,13 @@ jobs:
               "attachments": [
                 {
                   "color": "danger",
-                  "fallback": "${{ matrix.image }} Image Build Failed - ${{ github.workflow }} in ${{ github.repository }}",
+                  "fallback": "${{ matrix.base_image }} Image Build Failed - ${{ github.workflow }} in ${{ github.repository }}",
                   "blocks": [
                     {
                       "type": "header",
                       "text": {
                         "type": "plain_text",
-                        "text": "🔨 ${{ matrix.image }} Image Build Failed"
+                        "text": "🔨 ${{ matrix.base_image }} Image Build Failed"
                       }
                     },
                     {
