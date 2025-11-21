@@ -33,16 +33,16 @@ Tags applied (via GitHub Actions metadata):
 Dockerfile exposes:
 
 ```
-ARG JAVA_BASE_IMAGE=eclipse-temurin
-ARG JAVA_BASE_TAG=<variant>
+ARG BASE_IMAGE=eclipse-temurin
+ARG BASE_TAG=<variant>
 ```
 
 These are passed by CI matrix; you can override locally when rebuilding a specific variant:
 
 ```bash
 docker build \
-    --build-arg JAVA_BASE_TAG=21-jre-alpine \
-    --build-arg JAVA_BASE_IMAGE=eclipse-temurin \
+    --build-arg BASE_TAG=21-jre-alpine \
+    --build-arg BASE_IMAGE=eclipse-temurin \
     -t hmpps-eclipse-temurin:21-jre-alpine \
     images/eclipse-temurin/alpine
 ```

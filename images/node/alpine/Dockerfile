@@ -1,21 +1,21 @@
 # HMPPS Node.js Base Image
 
-ARG NODE_BASE_IMAGE=node
-ARG NODE_BASE_TAG=24-alpine
-FROM ${NODE_BASE_IMAGE}:${NODE_BASE_TAG}
+ARG BASE_IMAGE=node
+ARG BASE_TAG=24-alpine
+FROM ${BASE_IMAGE}:${BASE_TAG}
 
 # Re-declare build args in-stage for label use
-ARG NODE_BASE_IMAGE
-ARG NODE_BASE_TAG
+ARG BASE_IMAGE
+ARG BASE_TAG
 
 # Metadata
 LABEL org.opencontainers.image.title="HMPPS Node.js Base Image"
 LABEL org.opencontainers.image.description="Base container image for Node.js applications in HMPPS"
 LABEL org.opencontainers.image.source="https://github.com/ministryofjustice/hmpps-base-container-images"
 LABEL org.opencontainers.image.vendor="Ministry of Justice"
-LABEL hmpps.node.base_variant="${NODE_BASE_TAG}"
-LABEL hmpps.node.base_image="${NODE_BASE_IMAGE}"
-LABEL org.opencontainers.image.base.name="${NODE_BASE_IMAGE}:${NODE_BASE_TAG}"
+LABEL hmpps.node.base_variant="${BASE_TAG}"
+LABEL hmpps.node.base_image="${BASE_IMAGE}"
+LABEL org.opencontainers.image.base.name="${BASE_IMAGE}:${BASE_TAG}"
 
 # Create non-root app user (consistent with Java images)
 ARG APP_UID=2000
@@ -30,6 +30,6 @@ RUN ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezo
 # Apply security upgrades
 RUN apk upgrade --no-cache
 
-USER ${APP_UID}
+# USER ${APP_UID}
 
 WORKDIR /app
