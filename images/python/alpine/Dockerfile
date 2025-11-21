@@ -26,4 +26,4 @@ RUN chown -R 2000:2000 /app
 
 # Apply security upgrades last for better caching
 RUN apk upgrade --no-cache
-USER 2000
+
