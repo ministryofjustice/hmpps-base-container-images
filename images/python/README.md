@@ -6,7 +6,6 @@ This repository provides lightweight and optimized Docker images for Python 3.13
 
 | Variant Tag               | OS          | Arch (multi-platform) | Notes                          |
 |---------------------------|-------------|-----------------------|--------------------------------|
-| python3.13-bookworm-slim  | Debian      | amd64, arm64          | Slim variant for compatibility |
 | python3.13-alpine         | Alpine      | amd64, arm64          | Lightweight and minimal image  |
 
 
