@@ -45,7 +45,7 @@ jobs:
             base_tag: 25-alpine
             os: alpine
           - base_image: python
-            base_tag: python3.13
+            base_tag: python3.13-alpine
             os: alpine
     permissions:
       contents: read
