@@ -17,8 +17,7 @@ LABEL hmpps.python.base_variant="${BASE_TAG}"
 LABEL hmpps.python.base_image="${BASE_IMAGE}"
 LABEL org.opencontainers.image.base.name="${BASE_IMAGE}:${BASE_TAG}"
 
-
-
+WORKDIR /app
 ARG APP_UID=2000
 ARG APP_GID=2000
 RUN addgroup -g ${APP_GID} -S appgroup && \
