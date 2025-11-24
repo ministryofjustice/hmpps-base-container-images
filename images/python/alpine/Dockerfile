@@ -29,3 +29,5 @@ RUN apk upgrade --no-cache
 
 # update PATH environment variable
 ENV PATH=/home/appuser/.local:/app:$PATH
+
+USER 2000
