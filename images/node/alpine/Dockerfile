@@ -30,6 +30,9 @@ RUN ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezo
 # Apply security upgrades
 RUN apk upgrade --no-cache
 
+# Install build tools and dependencies for compiling software and Python packages
+RUN apk add --no-cache gcc python3-dev musl-dev linux-headers git ca-certificates && update-ca-certificates
+
 # USER ${APP_UID}
 
 WORKDIR /app
