@@ -34,7 +34,7 @@ USER 2000
 
 ## Notes
 
-- Add dependencies hmpps-python-lib and any other like veracode-api-signing, azure-identity etc in your pyproject.toml file and 
+- Add dependencies hmpps-sre-python-lib and any other like veracode-api-signing, azure-identity etc in your pyproject.toml file and then run `uv sync`
 
 ## Usage (multi-stage)
 
