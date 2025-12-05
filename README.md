@@ -19,7 +19,6 @@ Java:
 
 Node:
 - `24-alpine`
-- `25-alpine`
 
 All images are built multi-arch: `linux/amd64` and `linux/arm64`.
 
