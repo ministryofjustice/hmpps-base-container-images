@@ -4,7 +4,7 @@ Lean, standardized Node.js base for HMPPS apps (Alpine variants).
 
 ## Features
 
-- Node.js Alpine (24, 25 variants)
+- Node.js Alpine (24 variant)
 - Non‑root user `appuser` (UID/GID 2000) and `WORKDIR /app`
 - Timezone: `Europe/London`
 - Security updates applied at build (`apk upgrade --no-cache`)
@@ -12,7 +12,7 @@ Lean, standardized Node.js base for HMPPS apps (Alpine variants).
 
 Registry: `ghcr.io/ministryofjustice/hmpps-node`
 
-Common tags: `24-alpine`, `25-alpine`, date tags (YYYYMMDD), `latest`
+Common tags: `24-alpine`, date tags (YYYYMMDD), `latest`
 
 ## Usage (simple)
 
@@ -30,7 +30,7 @@ CMD ["npm", "start"]
 ## Notes
 
 - Add build tools (git, curl, etc.) in your app image only if needed.
-- To switch Node version, pick the matching tag (e.g. `25-alpine`).
+- To switch Node version, pick the matching tag (e.g. `24-alpine`).
 
 ## Usage (multi-stage)
 

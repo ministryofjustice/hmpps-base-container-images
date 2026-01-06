@@ -1,6 +1,6 @@
 # Docker Images for Python 3.13
 
-This repository provides lightweight and optimized Docker images for Python 3.13, based on two different base images: Debian Bookworm Slim and Alpine Linux. These images are hosted on GitHub Container Registry (GHCR).
+This repository provides lightweight and optimized Docker images for Python 3.13, based on two different base images: Alpine Linux. These images are hosted on GitHub Container Registry (GHCR).
 
 ## Supported Variants
 
@@ -15,7 +15,7 @@ This repository provides lightweight and optimized Docker images for Python 3.13
 
 Registry: `ghcr.io/ministryofjustice/hmpps-python`
 
-Common tags: `python3.13-alpine`, `python3.13-bookworm-slim`, date tags (YYYYMMDD), `latest`
+Common tags: `python3.13-alpine`, date tags (YYYYMMDD), `latest`
 
 ## Usage (simple)
 
