@@ -20,6 +20,9 @@ Java:
 Node:
 - `24-alpine`
 
+Python:
+- `python3.13-alpine`
+
 All images are built multi-arch: `linux/amd64` and `linux/arm64`.
 
 ## Tagging Scheme
