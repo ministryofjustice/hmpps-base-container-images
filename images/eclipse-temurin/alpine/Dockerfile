@@ -39,5 +39,3 @@ RUN apk upgrade --no-cache
 
 # Sensible JVM defaults for containers
 ENV JAVA_TOOL_OPTIONS="-XX:+ExitOnOutOfMemoryError -XX:MaxRAMPercentage=75.0"
-
-USER ${APP_UID}

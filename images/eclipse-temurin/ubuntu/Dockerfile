@@ -43,5 +43,3 @@ RUN apt-get update && \
 
 # Sensible JVM defaults for containers
 ENV JAVA_TOOL_OPTIONS="-XX:+ExitOnOutOfMemoryError -XX:MaxRAMPercentage=75.0"
-
-USER ${APP_UID}
