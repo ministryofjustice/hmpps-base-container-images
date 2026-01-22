@@ -38,6 +38,6 @@ RUN chown appuser:appgroup /home/appuser/.postgresql/root.crt && \
 RUN apk upgrade --no-cache
 
 # Sensible JVM defaults for containers
-ENV JAVA_TOOL_OPTIONS="-XX:+ExitOnOutOfMemoryError -XX:MaxRAMPercentage=75.0"
+ENV JAVA_TOOL_OPTIONS="-XX:+ExitOnOutOfMemoryError -XX:MaxRAMPercentage=60.0"
 
 USER ${APP_UID}
