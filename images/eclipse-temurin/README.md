@@ -52,11 +52,11 @@ docker build \
 | Option | Effect | Rationale |
 |--------|--------|-----------|
 | `-XX:+ExitOnOutOfMemoryError` | JVM exits immediately on OOM | Fast restart; avoids wedged process |
-| `-XX:MaxRAMPercentage=60.0` | Heap sized to 60% of container limit | Leaves headroom for metaspace/native |
+| `-XX:MaxRAMPercentage=50.0` | Heap sized to 50% of container limit | Leaves headroom for metaspace/native |
 
 Override by supplying `JAVA_TOOL_OPTIONS` or explicit `-Xmx` in your application image.
 
-The 60% has been judged based off a maximum pod memory limit of 1Gi. If you have set your pod maximum to a greater value
+The 50% has been judged based off a maximum pod memory limit of 1Gi. If you have set your pod maximum to a greater value
 then you could up the percentage to a higher figure without running foul of the linux Out Of Memory Killer.
 
 ## RDS Root Certificate
