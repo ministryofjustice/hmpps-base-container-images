@@ -87,6 +87,7 @@ jobs:
         with:
           context: ./images/${{ matrix.base_image }}/${{ matrix.os }}
           platforms: linux/amd64
+          pull: true
           push: false
           load: true
           tags: hmpps-${{ matrix.base_image }}-${{ matrix.base_tag }}-${{ matrix.os }}:scan
@@ -172,7 +173,7 @@ jobs:
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: 'trivy-results-${{ matrix.base_image }}-${{ matrix.base_tag }}-${{ steps.build_push.outputs.digest }}.sarif'
-          category: container-image/${{ matrix.base_image }}/${{ matrix.base_tag }}/${{ matrix.os }}
+          category: ${{ matrix.base_image }}/${{ matrix.base_tag }}/${{ matrix.os }}
 
       - name: Slack notification
         id: slack
