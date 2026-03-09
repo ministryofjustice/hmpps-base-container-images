@@ -173,7 +173,7 @@ jobs:
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: 'trivy-results-${{ matrix.base_image }}-${{ matrix.base_tag }}-${{ steps.build_push.outputs.digest }}.sarif'
-          category: ${{ matrix.base_image }}/${{ matrix.base_tag }}/${{ matrix.os }}
+          category: "${{ matrix.base_image }}:${{ matrix.base_tag }}"
 
       - name: Slack notification
         id: slack
