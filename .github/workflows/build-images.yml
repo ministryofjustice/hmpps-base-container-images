@@ -153,7 +153,7 @@ jobs:
           jq --arg image_ref "${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.base_image }}:${{ matrix.base_tag }}-${{ matrix.os }}" --arg image_ref_digest "${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.base_image }}@${{ steps.build_push.outputs.digest }}" --arg image_digest "${{ steps.build_push.outputs.digest }}" --arg image_short_sha "$SHORT_IMAGE_SHA" --arg variant "${{ matrix.base_image }}:${{ matrix.base_tag }}:${{ matrix.os }}" '
             .runs[] |= (
               .automationDetails = { id: ($variant) }
-              | .invocations = ((.invocations // [{}]) | map(. + { properties: ((.properties // {}) + { image: $image_ref, image_with_digest: $image_ref_digest, image_digest: $image_digest, image_short_sha: $image_short_sha, variant: $variant }) }))
+              | .invocations = ((.invocations // [{ executionSuccessful: true }]) | map((if has("executionSuccessful") then . else . + { executionSuccessful: true } end) + { properties: ((.properties // {}) + { image: $image_ref, image_with_digest: $image_ref_digest, image_digest: $image_digest, image_short_sha: $image_short_sha, variant: $variant }) }))
               | .results = ((.results // []) | map(
                   .message = ((.message // {}) + {
                     text: ((.message.text // "Vulnerability detected")
