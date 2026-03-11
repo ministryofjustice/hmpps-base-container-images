@@ -1,6 +1,6 @@
 # HMPPS Java Base Image
 ARG BASE_IMAGE=eclipse-temurin
-ARG BASE_TAG=21-jre-jammy
+ARG BASE_TAG=21.0.10_7-jre-jammy
 FROM ${BASE_IMAGE}:${BASE_TAG} AS base
 
 # Re-declare build args within this stage for later use in labels
