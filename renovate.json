@@ -1,0 +1,16 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["github>ministryofjustice/hmpps-renovate-config:base"],
+  "packageRules": [
+    {
+      "matchManagers": ["github-actions"],
+      "matchFileNames": [
+        "**/.github/workflows/**/*.ya?ml",
+        "**/.github/actions/**/*.ya?ml"
+      ],
+      "labels": ["github-actions"],
+      "separateMinorPatch": true,
+      "enabled": true
+    }
+  ]
+}
