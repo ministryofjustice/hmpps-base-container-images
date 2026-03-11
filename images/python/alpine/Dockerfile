@@ -2,7 +2,7 @@
 
 ARG BASE_IMAGE=ghcr.io/astral-sh/uv
 ARG BASE_TAG=python3.13-alpine
-FROM ${BASE_IMAGE}:${BASE_TAG}
+FROM ${BASE_IMAGE}:${BASE_TAG} AS base
 
 # Re-declare build args in-stage for label use
 ARG BASE_IMAGE
@@ -24,7 +24,9 @@ RUN addgroup -g ${APP_GID} -S appgroup && \
     adduser -u ${APP_UID} -S appuser -G appgroup
 RUN chown -R 2000:2000 /app
 
-# Apply security upgrades last for better caching
+# Security upgrades in separate stage for cache control
+# Build with: docker buildx build --no-cache-filter=security-upgrades ...
+FROM base AS security-upgrades
 RUN apk upgrade --no-cache
 
 # update PATH environment variable
