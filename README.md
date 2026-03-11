@@ -44,3 +44,17 @@ The `:latest` tag is applied per repository (currently points to the most recent
 - Weekday scheduled build: 05:00 UTC (creates date tags)
 - Multi-platform build/push via Buildx
 - Trivy scan: table output for branch builds; SARIF uploaded on scheduled (or designated) runs
+
+## Security Upgrades
+
+All Dockerfiles use a multi-stage build pattern to ensure OS security patches are always applied fresh:
+
+```dockerfile
+FROM base-image AS base
+# ... setup steps ...
+
+FROM base AS security-upgrades
+RUN apk upgrade --no-cache  # or apt-get upgrade for Ubuntu
+```
+
+The CI workflow uses BuildKit's `--no-cache-filter=security-upgrades` to skip the cache for this stage, ensuring `apk upgrade` / `apt-get upgrade` always fetches the latest patches — even when other layers are cached.
