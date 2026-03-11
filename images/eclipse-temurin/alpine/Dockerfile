@@ -1,7 +1,7 @@
 # HMPPS Java Base Image (Temurin Alpine variant)
 ARG BASE_IMAGE=eclipse-temurin
 ARG BASE_TAG=21-jre-alpine
-FROM ${BASE_IMAGE}:${BASE_TAG}
+FROM ${BASE_IMAGE}:${BASE_TAG} AS base
 
 # Re-declare args in-stage for labels
 ARG BASE_IMAGE
@@ -34,7 +34,9 @@ ADD https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /home/appu
 RUN chown appuser:appgroup /home/appuser/.postgresql/root.crt && \
     chmod 0644 /home/appuser/.postgresql/root.crt
 
-# Apply security upgrades last for better caching
+# Security upgrades in separate stage for cache control
+# Build with: docker buildx build --no-cache-filter=security-upgrades ...
+FROM base AS security-upgrades
 RUN apk upgrade --no-cache
 
 # Sensible JVM defaults for containers

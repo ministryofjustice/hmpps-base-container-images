@@ -2,7 +2,7 @@
 
 ARG BASE_IMAGE=node
 ARG BASE_TAG=24-alpine
-FROM ${BASE_IMAGE}:${BASE_TAG}
+FROM ${BASE_IMAGE}:${BASE_TAG} AS base
 
 # Re-declare build args in-stage for label use
 ARG BASE_IMAGE
@@ -27,7 +27,9 @@ RUN addgroup -g ${APP_GID} -S appgroup && \
 ENV TZ="Europe/London"
 RUN ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezone
 
-# Apply security upgrades
+# Security upgrades in separate stage for cache control
+# Build with: docker buildx build --no-cache-filter=security-upgrades ...
+FROM base AS security-upgrades
 RUN apk upgrade --no-cache
 
 # USER ${APP_UID}

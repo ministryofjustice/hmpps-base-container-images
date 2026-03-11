@@ -1,7 +1,7 @@
 # HMPPS Java Base Image
 ARG BASE_IMAGE=eclipse-temurin
 ARG BASE_TAG=21-jre-jammy
-FROM ${BASE_IMAGE}:${BASE_TAG}
+FROM ${BASE_IMAGE}:${BASE_TAG} AS base
 
 # Re-declare build args within this stage for later use in labels
 ARG BASE_IMAGE
@@ -36,7 +36,9 @@ ADD https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /home/appu
 RUN chown appuser:appgroup /home/appuser/.postgresql/root.crt && \
     chmod 0644 /home/appuser/.postgresql/root.crt
 
-# Apply security upgrades
+# Security upgrades in separate stage for cache control
+# Build with: docker buildx build --no-cache-filter=security-upgrades ...
+FROM base AS security-upgrades
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y upgrade && \
     apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/*

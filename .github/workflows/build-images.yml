@@ -94,6 +94,7 @@ jobs:
           build-args: |
             BASE_TAG=${{ matrix.base_tag }}
           cache-from: type=gha
+          no-cache-filters: security-upgrades
 
       - name: Run Trivy vulnerability scanner (table output)
         id: trivy-vuln-scan
@@ -124,6 +125,7 @@ jobs:
             BASE_TAG=${{ matrix.base_tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          no-cache-filters: security-upgrades
 
       - name: Run Trivy vulnerability scanner (SARIF output)
         id: trivy-sarif
