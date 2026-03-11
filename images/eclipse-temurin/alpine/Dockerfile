@@ -1,6 +1,6 @@
 # HMPPS Java Base Image (Temurin Alpine variant)
 ARG BASE_IMAGE=eclipse-temurin
-ARG BASE_TAG=21-jre-alpine
+ARG BASE_TAG=25.0.2_10-jre-alpine
 FROM ${BASE_IMAGE}:${BASE_TAG} AS base
 
 # Re-declare args in-stage for labels
