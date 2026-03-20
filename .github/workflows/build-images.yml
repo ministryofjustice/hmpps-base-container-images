@@ -82,36 +82,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build local image for scanning
-        uses: docker/build-push-action@v7
-        with:
-          context: ./images/${{ matrix.base_image }}/${{ matrix.os }}
-          platforms: linux/amd64
-          pull: true
-          push: false
-          load: true
-          tags: hmpps-${{ matrix.base_image }}-${{ matrix.base_tag }}-${{ matrix.os }}:scan
-          build-args: |
-            BASE_TAG=${{ matrix.base_tag }}
-          cache-from: type=gha
-          no-cache-filters: security-upgrades
-
-      - name: Run Trivy vulnerability scanner (table output)
-        id: trivy-vuln-scan
-        uses: aquasecurity/trivy-action@0.35.0
-        if: github.ref != 'refs/heads/main'
-        with:
-          image-ref: hmpps-${{ matrix.base_image }}-${{ matrix.base_tag }}-${{ matrix.os }}:scan
-          format: 'table'
-          exit-code: '0'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          scanners: 'vuln'
-          severity: 'CRITICAL,HIGH'
-          timeout: 15m
-
       - name: Build and push container image
-        id: build_push
         if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
         uses: docker/build-push-action@v7
         with:
@@ -126,56 +97,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           no-cache-filters: security-upgrades
-
-      - name: Run Trivy vulnerability scanner (SARIF output)
-        id: trivy-sarif
-        if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
-        uses: aquasecurity/trivy-action@0.35.0
-        with:
-          image-ref: hmpps-${{ matrix.base_image }}-${{ matrix.base_tag }}-${{ matrix.os }}:scan
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          scanners: 'vuln'
-          severity: 'CRITICAL,HIGH'
-          exit-code: '0'
-          format: 'sarif'
-          output: 'trivy-results-${{ matrix.base_image }}-${{ matrix.base_tag }}-${{ steps.build_push.outputs.digest }}.sarif'
-          limit-severities-for-sarif: true
-          timeout: 15m
-
-      - name: Annotate SARIF with variant metadata
-        if: (github.ref == 'refs/heads/main' || github.event_name == 'schedule') && steps.trivy-sarif.outcome == 'success' && hashFiles(format('trivy-results-{0}-{1}-{2}.sarif', matrix.base_image, matrix.base_tag, steps.build_push.outputs.digest)) != ''
-        run: |
-          file="trivy-results-${{ matrix.base_image }}-${{ matrix.base_tag }}-${{ steps.build_push.outputs.digest }}.sarif"
-          annotated="trivy-results-annotated-${{ matrix.base_image }}-${{ matrix.base_tag }}-${{ steps.build_push.outputs.digest }}.sarif"
-          IMAGE_DIGEST="${{ steps.build_push.outputs.digest }}"
-          SHORT_IMAGE_SHA="${IMAGE_DIGEST#sha256:}"
-          SHORT_IMAGE_SHA="${SHORT_IMAGE_SHA:0:7}"
-          # Use jq to add metadata about the image and variant to the SARIF file, and include it in the message text for any findings
-          jq --arg image_ref "${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.base_image }}:${{ matrix.base_tag }}" --arg image_ref_digest "${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.base_image }}@${{ steps.build_push.outputs.digest }}" --arg image_digest "${{ steps.build_push.outputs.digest }}" --arg image_short_sha "$SHORT_IMAGE_SHA" --arg variant "${{ matrix.base_image }}:${{ matrix.base_tag }}" '
-            .runs[] |= (
-              .tool.driver.name = ("Trivy [" + $variant + "]")
-              | .properties = ((.properties // {}) + { image: $image_ref, image_with_digest: $image_ref_digest, image_digest: $image_digest, image_short_sha: $image_short_sha, variant: $variant })
-              | .results = ((.results // []) | map(
-                  .message = ((.message // {}) + {
-                    text: ((.message.text // "Vulnerability detected")
-                      + "\n\nContainer Variant: " + $variant
-                      + "\nImage Digest: " + $image_digest
-                      + "\nImage Ref: " + $image_ref_digest
-                      + "\nImage SHA (short): " + $image_short_sha)
-                  })
-                ))
-            )
-          ' "$file" > "$annotated"
-          mv "$annotated" "$file"
-        shell: bash
-
-      - name: Upload Trivy scan results to GitHub Security tab
-        if: (github.ref == 'refs/heads/main' || github.event_name == 'schedule') && steps.trivy-sarif.outcome == 'success' && hashFiles(format('trivy-results-{0}-{1}-{2}.sarif', matrix.base_image, matrix.base_tag, steps.build_push.outputs.digest)) != ''
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: 'trivy-results-${{ matrix.base_image }}-${{ matrix.base_tag }}-${{ steps.build_push.outputs.digest }}.sarif'
-          category: '${{ matrix.base_image }}:${{ matrix.base_tag }}'
 
       - name: Slack notification
         id: slack
