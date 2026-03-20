@@ -83,7 +83,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push container image
-        id: build_push
         if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
         uses: docker/build-push-action@v7
         with:
