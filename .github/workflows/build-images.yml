@@ -82,20 +82,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build local image for scanning
-        uses: docker/build-push-action@v7
-        with:
-          context: ./images/${{ matrix.base_image }}/${{ matrix.os }}
-          platforms: linux/amd64
-          pull: true
-          push: false
-          load: true
-          tags: hmpps-${{ matrix.base_image }}-${{ matrix.base_tag }}-${{ matrix.os }}:scan
-          build-args: |
-            BASE_TAG=${{ matrix.base_tag }}
-          cache-from: type=gha
-          no-cache-filters: security-upgrades
-
       - name: Build and push container image
         id: build_push
         if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
