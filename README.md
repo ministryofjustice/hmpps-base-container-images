@@ -45,6 +45,32 @@ The `:latest` tag is applied per repository (currently points to the most recent
 - Multi-platform build/push via Buildx
 - Trivy scan: table output for branch builds; SARIF uploaded on scheduled (or designated) runs
 
+## Upgrading Base Versions (Workflow-Only)
+
+To upgrade image versions, update the matrix in `.github/workflows/build-images.yml` instead of editing Dockerfiles.
+
+The workflow matrix controls:
+- `base_image`: image family/repository path (for example `eclipse-temurin`, `node`, `python`)
+- `base_tag`: upstream tag to build from (for example `25-jre-jammy`, `24-alpine`, `python3.13-alpine`)
+
+Example matrix entry:
+
+```yaml
+- base_image: eclipse-temurin
+  base_tag: 25-jre-jammy
+  os: ubuntu
+```
+
+How updates work:
+- Existing tag refresh: keep the same `base_tag`; the scheduled weekday rebuild (`cron`) runs with `pull: true`, so the latest upstream image for that tag is pulled automatically.
+- New tag adoption: change `base_tag` (or add another matrix entry) to the new upstream tag you want to publish.
+- New variant publish: add a new matrix row with the required `base_image`, `base_tag`, and `os` so it is built and pushed as its own variant.
+
+When moving to a new tag, verify:
+- The upstream tag exists and is supported for your target architecture (`linux/amd64`, `linux/arm64`).
+- The selected `os` matches an existing Dockerfile location under `images/<base_image>/<os>`.
+- Consumers pin to the explicit variant tag (for example `25-jre-jammy`) rather than relying on `latest`.
+
 ## Security Upgrades
 
 All Dockerfiles use a multi-stage build pattern to ensure OS security patches are always applied fresh:
