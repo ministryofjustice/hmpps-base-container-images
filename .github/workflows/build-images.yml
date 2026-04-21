@@ -42,7 +42,8 @@ jobs:
             base_tag: 24-alpine
             os: alpine
           - base_image: node
-            base_tag: 24-alpine-runtime
+            base_tag: 24-alpine
+            base_tag_suffix: -runtime
             os: alpine-runtime
           - base_image: python
             base_tag: python3.13-alpine
@@ -71,12 +72,12 @@ jobs:
             latest=true
           tags: |
             # Prefix dynamic tags with the variant to prevent overwrites between matrix entries
-            type=schedule,pattern={{date 'YYYYMMDD'}},prefix=${{ matrix.base_tag }}-
-            type=ref,event=branch,prefix=${{ matrix.base_tag }}-
-            type=ref,event=tag,prefix=${{ matrix.base_tag }}-
-            type=ref,event=pr,prefix=${{ matrix.base_tag }}-
-            type=sha,prefix=${{ matrix.base_tag }}-
-            type=raw,value=${{ matrix.base_tag }}
+            type=schedule,pattern={{date 'YYYYMMDD'}},prefix=${{ matrix.base_tag }}${{ matrix.base_tag_suffix }}-
+            type=ref,event=branch,prefix=${{ matrix.base_tag }}${{ matrix.base_tag_suffix }}-
+            type=ref,event=tag,prefix=${{ matrix.base_tag }}${{ matrix.base_tag_suffix }}-
+            type=ref,event=pr,prefix=${{ matrix.base_tag }}${{ matrix.base_tag_suffix }}-
+            type=sha,prefix=${{ matrix.base_tag }}${{ matrix.base_tag_suffix }}-
+            type=raw,value=${{ matrix.base_tag }}${{ matrix.base_tag_suffix }}
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
