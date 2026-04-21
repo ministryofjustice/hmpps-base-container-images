@@ -86,13 +86,12 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push container image
-        if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7
         with:
           context: ./images/${{ matrix.base_image }}/${{ matrix.os }}
           platforms: linux/amd64,linux/arm64
           pull: true
-          push: true
+          push: ${{ github.ref == 'refs/heads/main' || github.event_name == 'schedule' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
