@@ -41,6 +41,9 @@ jobs:
           - base_image: node
             base_tag: 24-alpine
             os: alpine
+          - base_image: node
+            base_tag: 24-alpine-runtime
+            os: alpine-runtime
           - base_image: python
             base_tag: python3.13-alpine
             os: alpine
