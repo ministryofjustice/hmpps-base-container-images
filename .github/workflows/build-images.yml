@@ -41,6 +41,10 @@ jobs:
           - base_image: node
             base_tag: 24-alpine
             os: alpine
+          - base_image: node
+            base_tag: 24-alpine
+            base_tag_suffix: -runtime
+            os: alpine-runtime
           - base_image: python
             base_tag: python3.13-alpine
             os: alpine
@@ -68,12 +72,12 @@ jobs:
             latest=true
           tags: |
             # Prefix dynamic tags with the variant to prevent overwrites between matrix entries
-            type=schedule,pattern={{date 'YYYYMMDD'}},prefix=${{ matrix.base_tag }}-
-            type=ref,event=branch,prefix=${{ matrix.base_tag }}-
-            type=ref,event=tag,prefix=${{ matrix.base_tag }}-
-            type=ref,event=pr,prefix=${{ matrix.base_tag }}-
-            type=sha,prefix=${{ matrix.base_tag }}-
-            type=raw,value=${{ matrix.base_tag }}
+            type=schedule,pattern={{date 'YYYYMMDD'}},prefix=${{ matrix.base_tag }}${{ matrix.base_tag_suffix }}-
+            type=ref,event=branch,prefix=${{ matrix.base_tag }}${{ matrix.base_tag_suffix }}-
+            type=ref,event=tag,prefix=${{ matrix.base_tag }}${{ matrix.base_tag_suffix }}-
+            type=ref,event=pr,prefix=${{ matrix.base_tag }}${{ matrix.base_tag_suffix }}-
+            type=sha,prefix=${{ matrix.base_tag }}${{ matrix.base_tag_suffix }}-
+            type=raw,value=${{ matrix.base_tag }}${{ matrix.base_tag_suffix }}
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
@@ -83,13 +87,12 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push container image
-        if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7
         with:
           context: ./images/${{ matrix.base_image }}/${{ matrix.os }}
           platforms: linux/amd64,linux/arm64
           pull: true
-          push: true
+          push: ${{ github.ref == 'refs/heads/main' || github.event_name == 'schedule' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
