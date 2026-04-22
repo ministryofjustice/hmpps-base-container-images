@@ -19,6 +19,7 @@ Java:
 
 Node:
 - `24-alpine`
+- `24-alpine-runtime` — same as `24-alpine` but with package managers (npm, yarn, corepack) removed
 
 Python:
 - `python3.13-alpine`
