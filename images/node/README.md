@@ -2,6 +2,13 @@
 
 Lean, standardized Node.js base for HMPPS apps (Alpine variants).
 
+## Variants
+
+| Tag | Description |
+|-----|-------------|
+| `24-alpine` | Full Node.js 24 Alpine image including npm, yarn, and corepack |
+| `24-alpine-runtime` | Runtime-only image with package managers removed — smaller attack surface for production and fewer reported vulnerabilities from scanning tools |
+
 ## Features
 
 - Node.js Alpine (24 variant)
@@ -12,7 +19,7 @@ Lean, standardized Node.js base for HMPPS apps (Alpine variants).
 
 Registry: `ghcr.io/ministryofjustice/hmpps-node`
 
-Common tags: `24-alpine`, date tags (YYYYMMDD), `latest`
+Common tags: `24-alpine`, `24-alpine-runtime`, date tags (YYYYMMDD), `latest`
 
 ## Usage (simple)
 
@@ -31,45 +38,63 @@ CMD ["npm", "start"]
 
 - Add build tools (git, curl, etc.) in your app image only if needed.
 - To switch Node version, pick the matching tag (e.g. `24-alpine`).
+- Use `24-alpine-runtime` for the final stage of multi-stage builds — npm/yarn are not needed at runtime and their removal reduces the attack surface.
 
 ## Usage (multi-stage)
 
 ```dockerfile
-# Base (provides non-root user, TZ Europe/London, security upgrades)
-FROM ghcr.io/ministryofjustice/hmpps-node:24-alpine AS base
-
-# Optional build metadata
+# Build args available to all stages
 ARG BUILD_NUMBER
 ARG GIT_REF
 ARG GIT_BRANCH
-ENV BUILD_NUMBER=${BUILD_NUMBER} \
-	GIT_REF=${GIT_REF} \
-	GIT_BRANCH=${GIT_BRANCH}
+
+# Stage: build assets
+FROM ghcr.io/ministryofjustice/hmpps-node:24-alpine AS build
+
+ARG BUILD_NUMBER
+ARG GIT_REF
+ARG GIT_BRANCH
+
+# Cache breaking and ensure required build / git args defined
+RUN test -n "$BUILD_NUMBER" || (echo "BUILD_NUMBER not set" && false)
+RUN test -n "$GIT_REF" || (echo "GIT_REF not set" && false)
+RUN test -n "$GIT_BRANCH" || (echo "GIT_BRANCH not set" && false)
 
 WORKDIR /app
 
-# Build stage
-FROM base AS build
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm ci --no-audit
+COPY package*.json .allowed-scripts.mjs .npmrc ./
+RUN NPM_CONFIG_AUDIT=false NPM_CONFIG_FUND=false npm run setup
+ENV NODE_ENV='production'
 
 COPY . .
-ENV NODE_ENV=production
-RUN npm run build && npm prune --no-audit --omit=dev
+RUN npm run build
 
-# Final stage
-FROM base
-WORKDIR /app
+RUN npm prune --no-audit --no-fund --omit=dev
 
-COPY --from=build --chown=appuser:appgroup /app/package*.json ./
-COPY --from=build --chown=appuser:appgroup /app/dist ./dist
-COPY --from=build --chown=appuser:appgroup /app/node_modules ./node_modules
+# Stage: copy production assets and dependencies
+FROM ghcr.io/ministryofjustice/hmpps-node:24-alpine-runtime
+
+ARG BUILD_NUMBER
+ARG GIT_REF
+ARG GIT_BRANCH
+
+COPY --from=build --chown=appuser:appgroup \
+        /app/package.json \
+        /app/package-lock.json \
+        ./
+
+COPY --from=build --chown=appuser:appgroup \
+        /app/dist ./dist
+
+COPY --from=build --chown=appuser:appgroup \
+        /app/node_modules ./node_modules
 
 EXPOSE 3000
-ENV NODE_ENV=production
-# Ensure run as appuser, must be numeric user id
-USER 2000 
-CMD ["npm", "start"]
+ENV BUILD_NUMBER=${BUILD_NUMBER}
+ENV GIT_REF=${GIT_REF}
+ENV GIT_BRANCH=${GIT_BRANCH}
+ENV NODE_ENV='production'
+USER 2000
+
+CMD [ "node", "dist/server.js" ]
 ```
