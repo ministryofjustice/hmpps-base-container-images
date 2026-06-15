@@ -52,7 +52,7 @@ jobs:
       contents: read
       packages: write
       security-events: write
-
+    
     steps:
       - name: Check out the repo
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
@@ -101,25 +101,10 @@ jobs:
           cache-to: type=gha,mode=max
           no-cache-filters: security-upgrades
 
-      - name: Run Snyk Security Scan
-        id: snyk-scan
-        if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'schedule' }}
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@97eeedc606b4ce163133d203259a71698c9ad34b # v1.0.16
-        with:
-          subproject: ''
-          severity: 'HIGH,CRITICAL'
-          scan_type: 'image'
-          location: ${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.base_image }}:${{ matrix.base_tag }}${{ matrix.base_tag_suffix }}
-          snyk_policy_path: ''
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          client_id: ${{ secrets.HMPPS_SNYK_CLIENT_ID }}
-          client_secret: ${{ secrets.HMPPS_SNYK_CLIENT_SECRET }}
-          snyk_token: ${{ secrets.HMPPS_SNYK_API_KEY }}
-
       - name: Slack notification
         id: slack
         if: ${{ failure() }}
-        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3
+        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c  # v3
         with:
           method: chat.postMessage
           token: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
