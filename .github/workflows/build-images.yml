@@ -92,7 +92,8 @@ jobs:
           context: ./images/${{ matrix.base_image }}/${{ matrix.os }}
           platforms: linux/amd64,linux/arm64
           pull: true
-          push: ${{ github.ref == 'refs/heads/main' || github.event_name == 'schedule' }}
+          # push: ${{ github.ref == 'refs/heads/main' || github.event_name == 'schedule' }}
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
@@ -103,8 +104,8 @@ jobs:
 
       - name: Run Snyk Security Scan
         id: snyk-scan
-        if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'schedule' }}
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@97eeedc606b4ce163133d203259a71698c9ad34b # v1.0.16
+        # if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'schedule' }}
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@exclude-hmpps-base-container-images-for-helm
         with:
           subproject: ''
           severity: 'HIGH,CRITICAL'
