@@ -1,14 +1,14 @@
 # Node.js Base Image
 
-Lean, standardized Node.js base for HMPPS apps (Alpine variants).
+Lean, standardized Node.js base for HMPPS apps across Alpine and distroless variants.
 
 ## Variants
 
-| Tag | Description |
-|-----|-------------|
-| `24-alpine` | Full Node.js 24 Alpine image including npm, yarn, and corepack |
-| `24-alpine-runtime` | Runtime-only image with package managers removed — smaller attack surface for production and fewer reported vulnerabilities from scanning tools |
-| `24-distroless` | Distroless runtime image with Node.js only — minimal attack surface (no shell/package manager) |
+| Image | Tag | Description |
+|-------|-----|-------------|
+| `hmpps-node` | `24-alpine` | Full Node.js 24 Alpine image including npm, yarn, and corepack |
+| `hmpps-node` | `24-alpine-runtime` | Runtime-only image with package managers removed for production |
+| `hmpps-distroless-node` | `24` | Distroless runtime image with Node.js only — minimal attack surface (no shell/package manager) |
 
 ## Distroless Variant
 
@@ -22,15 +22,26 @@ The distroless variant uses Google's minimal distroless base image, reducing att
 
 ## Features
 
-- Node.js Alpine (24 variant)
+- Node.js 24 variants for Alpine and distroless runtimes
 - Non‑root user `appuser` (UID/GID 2000) and `WORKDIR /app`
 - Timezone: `Europe/London`
-- Security updates applied at build (`apk upgrade --no-cache`)
+- Security upgrades stage for Alpine variants (`apk upgrade --no-cache`)
 - OCI labels: `hmpps.node.base_image`, `hmpps.node.base_variant`, `org.opencontainers.image.base.name`
 
-Registry: `ghcr.io/ministryofjustice/hmpps-node`
+Registries:
 
-Common tags: `24-alpine`, `24-alpine-runtime`, date tags (YYYYMMDD), `latest`
+- `ghcr.io/ministryofjustice/hmpps-node`
+- `ghcr.io/ministryofjustice/hmpps-distroless-node`
+
+Common tags:
+
+- `hmpps-node`: `24-alpine`, `24-alpine-runtime`, date tags (YYYYMMDD), `latest`
+- `hmpps-distroless-node`: `24`, date tags (YYYYMMDD), `latest`
+
+Current latest mappings in CI:
+
+- `ghcr.io/ministryofjustice/hmpps-node:latest` -> `24-alpine-runtime`
+- `ghcr.io/ministryofjustice/hmpps-distroless-node:latest` -> `24`
 
 ## Usage (simple)
 
@@ -48,7 +59,7 @@ CMD ["npm", "start"]
 ## Notes
 
 - Add build tools (git, curl, etc.) in your app image only if needed.
-- To switch Node version, pick the matching tag (e.g. `24-alpine`).
+- To switch Node version, pick the matching published tag.
 - Use `24-alpine-runtime` for the final stage of multi-stage builds — npm/yarn are not needed at runtime and their removal reduces the attack surface.
 
 ## Usage (multi-stage)
