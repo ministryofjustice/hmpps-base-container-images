@@ -1,21 +1,14 @@
 # HMPPS Node.js Runtime Base Image
-
-ARG BASE_IMAGE=node
-ARG BASE_TAG=24-alpine
-FROM ${BASE_IMAGE}:${BASE_TAG} AS base
-
-# Re-declare build args in-stage for label use
-ARG BASE_IMAGE
-ARG BASE_TAG
+FROM node:24-alpine AS base
 
 # Metadata
 LABEL org.opencontainers.image.title="HMPPS Node.js Runtime Base Image"
 LABEL org.opencontainers.image.description="Runtime-only container image for Node.js applications in HMPPS (package managers removed)"
 LABEL org.opencontainers.image.source="https://github.com/ministryofjustice/hmpps-base-container-images"
 LABEL org.opencontainers.image.vendor="Ministry of Justice"
-LABEL hmpps.node.base_variant="${BASE_TAG}"
-LABEL hmpps.node.base_image="${BASE_IMAGE}"
-LABEL org.opencontainers.image.base.name="${BASE_IMAGE}:${BASE_TAG}"
+LABEL hmpps.node.base_variant="24-alpine"
+LABEL hmpps.node.base_image="node"
+LABEL org.opencontainers.image.base.name="node:24-alpine"
 
 # Create non-root app user (consistent with Java images)
 ARG APP_UID=2000

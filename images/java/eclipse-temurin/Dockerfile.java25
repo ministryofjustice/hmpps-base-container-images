@@ -1,21 +1,14 @@
-# HMPPS Java Base Image
-ARG BASE_IMAGE=eclipse-temurin
-ARG BASE_TAG=21-jre-jammy
-FROM ${BASE_IMAGE}:${BASE_TAG} AS base
-
-# Re-declare build args within this stage for later use in labels
-ARG BASE_IMAGE
-ARG BASE_TAG
+# HMPPS Java Base Image (Eclipse Temurin Java 25)
+FROM eclipse-temurin:25-jre-jammy AS base
 
 # Metadata
-LABEL org.opencontainers.image.title="HMPPS Java Base Image"
-LABEL org.opencontainers.image.description="Base container image for Java applications in HMPPS"
+LABEL org.opencontainers.image.title="HMPPS Java Base Image (Java 25)"
+LABEL org.opencontainers.image.description="Base container image for Java 25 applications in HMPPS"
 LABEL org.opencontainers.image.source="https://github.com/ministryofjustice/hmpps-base-container-images"
 LABEL org.opencontainers.image.vendor="Ministry of Justice"
-LABEL hmpps.java.base_variant="${BASE_TAG}"
-LABEL hmpps.java.base_image="${BASE_IMAGE}"
-LABEL org.opencontainers.image.base.name="${BASE_IMAGE}:${BASE_TAG}"
-
+LABEL hmpps.java.base_variant="25-jre-jammy"
+LABEL hmpps.java.base_image="eclipse-temurin"
+LABEL org.opencontainers.image.base.name="eclipse-temurin:25-jre-jammy"
 
 WORKDIR /app
 

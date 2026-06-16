@@ -26,28 +26,46 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - base_image: eclipse-temurin
-            base_tag: 21-jre-jammy
-            os: ubuntu
-          - base_image: eclipse-temurin
-            base_tag: 25-jre-jammy
-            os: ubuntu
-          - base_image: eclipse-temurin
-            base_tag: 21-jre-alpine
-            os: alpine
-          - base_image: eclipse-temurin
-            base_tag: 25-jre-alpine
-            os: alpine
-          - base_image: node
-            base_tag: 24-alpine
-            os: alpine
-          - base_image: node
-            base_tag: 24-alpine
-            base_tag_suffix: -runtime
-            os: alpine-runtime
-          - base_image: python
-            base_tag: python3.13-alpine
-            os: alpine
+          - image_name: eclipse-temurin
+            context: images/java/eclipse-temurin
+            dockerfile: images/java/eclipse-temurin/Dockerfile.java21
+            tag_prefix: 21-jre-jammy
+            publish_latest: false
+          - image_name: eclipse-temurin
+            context: images/java/eclipse-temurin
+            dockerfile: images/java/eclipse-temurin/Dockerfile.java25
+            tag_prefix: 25-jre-jammy
+            publish_latest: true
+          - image_name: distroless-java
+            context: images/java/distroless
+            dockerfile: images/java/distroless/Dockerfile.java21
+            tag_prefix: 21-jre
+            publish_latest: false
+          - image_name: distroless-java
+            context: images/java/distroless
+            dockerfile: images/java/distroless/Dockerfile.java25
+            tag_prefix: 25-jre
+            publish_latest: true
+          - image_name: node
+            context: images/node/alpine
+            dockerfile: images/node/alpine/Dockerfile
+            tag_prefix: 24-alpine
+            publish_latest: false
+          - image_name: node
+            context: images/node/alpine-runtime
+            dockerfile: images/node/alpine-runtime/Dockerfile
+            tag_prefix: 24-alpine-runtime
+            publish_latest: true
+          - image_name: distroless-node
+            context: images/node/distroless
+            dockerfile: images/node/distroless/Dockerfile
+            tag_prefix: 24
+            publish_latest: true
+          - image_name: python
+            context: images/python/alpine
+            dockerfile: images/python/alpine/Dockerfile
+            tag_prefix: python3.13-alpine
+            publish_latest: true
     permissions:
       contents: read
       packages: write
@@ -67,17 +85,18 @@ jobs:
         id: meta
         uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6
         with:
-          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.base_image }}
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.image_name }}
           flavor: |
-            latest=true
+            latest=false
           tags: |
             # Prefix dynamic tags with the variant to prevent overwrites between matrix entries
-            type=schedule,pattern={{date 'YYYYMMDD'}},prefix=${{ matrix.base_tag }}${{ matrix.base_tag_suffix }}-
-            type=ref,event=branch,prefix=${{ matrix.base_tag }}${{ matrix.base_tag_suffix }}-
-            type=ref,event=tag,prefix=${{ matrix.base_tag }}${{ matrix.base_tag_suffix }}-
-            type=ref,event=pr,prefix=${{ matrix.base_tag }}${{ matrix.base_tag_suffix }}-
-            type=sha,prefix=${{ matrix.base_tag }}${{ matrix.base_tag_suffix }}-
-            type=raw,value=${{ matrix.base_tag }}${{ matrix.base_tag_suffix }}
+            type=schedule,pattern={{date 'YYYYMMDD'}},prefix=${{ matrix.tag_prefix }}-
+            type=ref,event=branch,prefix=${{ matrix.tag_prefix }}-
+            type=ref,event=tag,prefix=${{ matrix.tag_prefix }}-
+            type=ref,event=pr,prefix=${{ matrix.tag_prefix }}-
+            type=sha,prefix=${{ matrix.tag_prefix }}-
+            type=raw,value=${{ matrix.tag_prefix }}
+            type=raw,value=latest,enable=${{ matrix.publish_latest }}
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
@@ -89,14 +108,13 @@ jobs:
       - name: Build and push container image
         uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7
         with:
-          context: ./images/${{ matrix.base_image }}/${{ matrix.os }}
+          context: ./${{ matrix.context }}
+          file: ./${{ matrix.dockerfile }}
           platforms: linux/amd64,linux/arm64
           pull: true
           push: ${{ github.ref == 'refs/heads/main' || github.event_name == 'schedule' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            BASE_TAG=${{ matrix.base_tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           no-cache-filters: security-upgrades
@@ -115,13 +133,13 @@ jobs:
               "attachments": [
                 {
                   "color": "danger",
-                  "fallback": "${{ matrix.base_image }} Image Build Failed - ${{ github.workflow }} in ${{ github.repository }}",
+                  "fallback": "${{ matrix.image_name }} Image Build Failed - ${{ github.workflow }} in ${{ github.repository }}",
                   "blocks": [
                     {
                       "type": "header",
                       "text": {
                         "type": "plain_text",
-                        "text": "🔨 ${{ matrix.base_image }} Image Build Failed"
+                        "text": "🔨 ${{ matrix.image_name }} Image Build Failed"
                       }
                     },
                     {

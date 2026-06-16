@@ -1,21 +1,14 @@
-# HMPPS Node.js Base Image
-
-ARG BASE_IMAGE=ghcr.io/astral-sh/uv
-ARG BASE_TAG=python3.13-alpine
-FROM ${BASE_IMAGE}:${BASE_TAG} AS base
-
-# Re-declare build args in-stage for label use
-ARG BASE_IMAGE
-ARG BASE_TAG
+# HMPPS Python Base Image
+FROM ghcr.io/astral-sh/uv:python3.13-alpine AS base
 
 # Metadata
-LABEL org.opencontainers.image.title="HMPPS python Base Image"
-LABEL org.opencontainers.image.description="Base container image for python applications used within HMPPS"
+LABEL org.opencontainers.image.title="HMPPS Python Base Image"
+LABEL org.opencontainers.image.description="Base container image for Python applications used within HMPPS"
 LABEL org.opencontainers.image.source="https://github.com/ministryofjustice/hmpps-base-container-images"
 LABEL org.opencontainers.image.vendor="Ministry of Justice"
-LABEL hmpps.python.base_variant="${BASE_TAG}"
-LABEL hmpps.python.base_image="${BASE_IMAGE}"
-LABEL org.opencontainers.image.base.name="${BASE_IMAGE}:${BASE_TAG}"
+LABEL hmpps.python.base_variant="python3.13-alpine"
+LABEL hmpps.python.base_image="ghcr.io/astral-sh/uv"
+LABEL org.opencontainers.image.base.name="ghcr.io/astral-sh/uv:python3.13-alpine"
 
 WORKDIR /app
 ARG APP_UID=2000

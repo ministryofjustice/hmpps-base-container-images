@@ -8,6 +8,17 @@ Lean, standardized Node.js base for HMPPS apps (Alpine variants).
 |-----|-------------|
 | `24-alpine` | Full Node.js 24 Alpine image including npm, yarn, and corepack |
 | `24-alpine-runtime` | Runtime-only image with package managers removed — smaller attack surface for production and fewer reported vulnerabilities from scanning tools |
+| `24-distroless` | Distroless runtime image with Node.js only — minimal attack surface (no shell/package manager) |
+
+## Distroless Variant
+
+The distroless variant uses Google's minimal distroless base image, reducing attack surface and image size.
+
+**Notes:**
+
+- No shell/package manager in runtime image (debugging harder).
+- Two-stage build: prepare assets in full Node image, run on distroless.
+- Requires explicit binary/library copies; fewer implicit dependencies.
 
 ## Features
 

@@ -1,20 +1,30 @@
-# HMPPS Java Base Image (Eclipse Temurin)
+# HMPPS Java Base Image
 
-Standardized base image for JVM applications in HMPPS. Provides a consistent, lean, non‑root runtime across Ubuntu (Jammy) and Alpine variants of Eclipse Temurin JRE.
+Standardized base image for JVM applications in HMPPS. Provides a consistent, lean, non‑root runtime across Ubuntu (Jammy) and distroless variants.
 
 ## Supported Variants
 
-| Variant Tag       | OS     | Arch (multi-platform) | Notes |
-|-------------------|--------|-----------------------|-------|
-| 21-jre-jammy      | Ubuntu | amd64, arm64          | LTS line (Java 21) |
-| 25-jre-jammy      | Ubuntu | amd64, arm64          | Latest (preview until GA) |
-| 21-jre-alpine     | Alpine | amd64, arm64          | Smaller footprint |
-| 25-jre-alpine     | Alpine | amd64, arm64          | Smaller footprint |
+| Variant Tag   | OS         | Arch (multi-platform) | Notes |
+|---------------|------------|-----------------------|-------|
+| 21-jre-jammy  | Ubuntu     | amd64, arm64          | LTS line (Java 21) |
+| 25-jre-jammy  | Ubuntu     | amd64, arm64          | Latest (preview until GA) |
+| 21-distroless | Distroless | amd64, arm64          | Minimal runtime footprint (no shell/package manager) |
+| 25-distroless | Distroless | amd64, arm64          | Minimal runtime footprint (no shell/package manager) |
+
+## Distroless Variant
+
+The distroless variants use Google's minimal distroless base images instead of full OS distributions, reducing attack surface and image size.
+
+**Notes:**
+
+- No shell/package manager in runtime image (debugging harder).
+- Two-stage build: prepare assets in Debian (full OS), run on distroless.
+- Requires explicit binary/library copies; fewer implicit dependencies.
 
 Images are published to:
 
 ```
-ghcr.io/ministryofjustice/hmpps-eclipse-temurin
+ghcr.io/ministryofjustice/hmpps-java
 ```
 
 Tags applied (via GitHub Actions metadata):
