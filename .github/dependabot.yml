@@ -6,3 +6,8 @@ updates:
       interval: "weekly"
     cooldown:
       default-days: 7
+    ignore:
+      - dependency-name: "ministryofjustice/hmpps-github-actions/*"
+        update-types:
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
