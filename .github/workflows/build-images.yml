@@ -22,6 +22,8 @@ jobs:
     name: Build-Scan-Push
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      SNYK_TOKEN: ${{ secrets.HMPPS_SNYK_API_KEY }}
     strategy:
       fail-fast: false
       matrix:
@@ -122,7 +124,7 @@ jobs:
 
       - name: Resolve image reference for Snyk scan
         id: snyk_image
-        if: ${{ secrets.HMPPS_SNYK_API_KEY != '' }}
+        if: ${{ env.SNYK_TOKEN != '' }}
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.event_name }}" == "schedule" ]]; then
             echo "image_ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.image_name }}:${{ matrix.tag_prefix }}" >> "$GITHUB_OUTPUT"
@@ -131,16 +133,16 @@ jobs:
           fi
 
       - name: Run Snyk container scan
-        if: ${{ secrets.HMPPS_SNYK_API_KEY != '' }}
+        if: ${{ env.SNYK_TOKEN != '' }}
         uses: snyk/actions/docker@9adf32b1121593767fc3c057af55b55db032dc04 # v1.0.0
         env:
-          SNYK_TOKEN: ${{ secrets.HMPPS_SNYK_API_KEY }}
+          SNYK_TOKEN: ${{ env.SNYK_TOKEN }}
         with:
           image: ${{ steps.snyk_image.outputs.image_ref }}
           args: --file=${{ matrix.dockerfile }} --sarif-file-output=snyk.sarif
 
       - name: Upload Snyk SARIF
-        if: ${{ always() && secrets.HMPPS_SNYK_API_KEY != '' && hashFiles('snyk.sarif') != '' }}
+        if: ${{ always() && env.SNYK_TOKEN != '' && hashFiles('snyk.sarif') != '' }}
         uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
         with:
           sarif_file: snyk.sarif
