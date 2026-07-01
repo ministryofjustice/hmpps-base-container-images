@@ -150,46 +150,45 @@ jobs:
             exit 1
           fi
 
-      - name: Normalize Snyk SARIF for GitHub
+      - name: Prepare SARIF for upload (safe fallback)
         if: ${{ env.SNYK_TOKEN != '' && hashFiles('snyk.sarif') != '' }}
         run: |
           set -euo pipefail
-          jq '
-            def normalize_severity($sev; $level):
-              if $sev == null then
-                if $level == "error" then "8.0"
-                elif $level == "warning" then "5.0"
-                elif $level == "note" then "3.0"
-                else "0.0" end
-              elif ($sev | type) == "number" then
-                ($sev | tostring)
-              elif ($sev | type) == "string" then
-                if ($sev | test("^[0-9]+(\\.[0-9]+)?$")) then $sev
-                elif (($sev | ascii_downcase) == "critical") then "9.0"
-                elif (($sev | ascii_downcase) == "high") then "8.0"
-                elif (($sev | ascii_downcase) == "medium") then "5.0"
-                elif (($sev | ascii_downcase) == "low") then "3.0"
-                else "0.0" end
-              else
-                "0.0"
-              end;
 
+          # Default: raw Snyk SARIF (known-good baseline)
+          cp snyk.sarif snyk-upload.sarif
+
+          # Optional normalization, but never block upload if it fails
+          if jq -e '
             .runs |= map(
               .tool = (.tool // {})
               | .tool.driver = (.tool.driver // {})
               | .tool.driver.rules = ((.tool.driver.rules // []) | map(
                 .properties = (.properties // {})
                 | .defaultConfiguration = (.defaultConfiguration // {})
-                | .properties["security-severity"] = normalize_severity(.properties["security-severity"]; .defaultConfiguration.level)
+                | .properties["security-severity"] =
+                    (
+                      .properties["security-severity"] // (
+                        if .defaultConfiguration.level == "error" then "8.0"
+                        elif .defaultConfiguration.level == "warning" then "5.0"
+                        elif .defaultConfiguration.level == "note" then "3.0"
+                        else "0.0" end
+                      )
+                    )
               ))
             )
-          ' snyk.sarif > snyk-normalized.sarif
+          ' snyk.sarif > snyk-upload.sarif.tmp; then
+            mv snyk-upload.sarif.tmp snyk-upload.sarif
+          else
+            echo "Normalization failed; uploading raw snyk.sarif"
+            rm -f snyk-upload.sarif.tmp || true
+          fi
 
       - name: Upload Snyk SARIF
-        if: ${{ always() && env.SNYK_TOKEN != '' && hashFiles('snyk-normalized.sarif') != '' }}
+        if: ${{ always() && env.SNYK_TOKEN != '' && hashFiles('snyk-upload.sarif') != '' }}
         uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
         with:
-          sarif_file: snyk-normalized.sarif
+          sarif_file: snyk-upload.sarif
           category: snyk-${{ matrix.image_name }}-${{ matrix.tag_prefix }}
 
       - name: Slack notification
