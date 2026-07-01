@@ -1,5 +1,5 @@
 # HMPPS Node.js Runtime Base Image
-FROM node:24-alpine AS base
+FROM node:26-alpine AS base
 
 # Metadata
 LABEL org.opencontainers.image.title="HMPPS Node.js Runtime Base Image"
