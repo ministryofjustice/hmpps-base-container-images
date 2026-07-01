@@ -112,10 +112,14 @@ jobs:
         with:
           context: ./${{ matrix.context }}
           file: ./${{ matrix.dockerfile }}
+          # main/scheduled builds publish multi-arch images; PR builds stay amd64-only
+          # so the image can be loaded locally on the amd64 GitHub runner for Snyk scanning.
           platforms: ${{ (github.ref == 'refs/heads/main' || github.event_name == 'schedule') && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
           pull: true
           push: ${{ github.ref == 'refs/heads/main' || github.event_name == 'schedule' }}
           load: ${{ !(github.ref == 'refs/heads/main' || github.event_name == 'schedule') }}
+          # main/scheduled builds use metadata-action tags and push to GHCR.
+          # PR builds use a local-only snyk-scan:* tag (not pushed) for container scanning.
           tags: ${{ (github.ref == 'refs/heads/main' || github.event_name == 'schedule') && steps.meta.outputs.tags || format('snyk-scan:{0}-{1}', matrix.image_name, matrix.tag_prefix) }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
@@ -125,6 +129,7 @@ jobs:
       - name: Resolve image reference for Snyk scan
         id: snyk_image
         run: |
+          # Scan the pushed GHCR tag on main/schedule; otherwise scan the local PR image tag.
           if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.event_name }}" == "schedule" ]]; then
             echo "image_ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.image_name }}:${{ matrix.tag_prefix }}" >> "$GITHUB_OUTPUT"
           else
