@@ -124,7 +124,6 @@ jobs:
 
       - name: Resolve image reference for Snyk scan
         id: snyk_image
-        if: ${{ env.SNYK_TOKEN != '' }}
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.event_name }}" == "schedule" ]]; then
             echo "image_ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.image_name }}:${{ matrix.tag_prefix }}" >> "$GITHUB_OUTPUT"
@@ -133,17 +132,13 @@ jobs:
           fi
 
       - name: Run Snyk container scan
-        if: ${{ env.SNYK_TOKEN != '' }}
         continue-on-error: true 
         uses: snyk/actions/docker@9adf32b1121593767fc3c057af55b55db032dc04 # v1.0.0
-        env:
-          SNYK_TOKEN: ${{ env.SNYK_TOKEN }}
         with:
           image: ${{ steps.snyk_image.outputs.image_ref }}
           args: --severity-threshold=high --file=${{ matrix.dockerfile }} --sarif-file-output=snyk.sarif
 
       - name: Verify Snyk scan execution
-        if: ${{ env.SNYK_TOKEN != '' }}
         run: |
           if [[ ! -s snyk.sarif ]]; then
             echo "Snyk scan did not complete successfully (missing snyk.sarif)."
@@ -151,7 +146,7 @@ jobs:
           fi
 
       - name: Prepare SARIF for upload
-        if: ${{ env.SNYK_TOKEN != '' && hashFiles('snyk.sarif') != '' }}
+        if: ${{ hashFiles('snyk.sarif') != '' }}
         run: |
           set -euo pipefail
 
@@ -211,7 +206,7 @@ jobs:
           ' snyk.sarif > snyk-upload.sarif
 
       - name: Upload Snyk SARIF
-        if: ${{ always() && env.SNYK_TOKEN != '' && hashFiles('snyk-upload.sarif') != '' }}
+        if: ${{ always() && hashFiles('snyk-upload.sarif') != '' }}
         uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
         with:
           sarif_file: snyk-upload.sarif
