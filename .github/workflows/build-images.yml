@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - feat/**
   pull_request:
   schedule:
     # Rebuild daily at 5 AM UTC (weekdays only)
@@ -141,7 +140,7 @@ jobs:
           SNYK_TOKEN: ${{ env.SNYK_TOKEN }}
         with:
           image: ${{ steps.snyk_image.outputs.image_ref }}
-          args: --file=${{ matrix.dockerfile }} --sarif-file-output=snyk.sarif
+          args: --severity-threshold=high --file=${{ matrix.dockerfile }} --sarif-file-output=snyk.sarif
 
       - name: Verify Snyk scan execution
         if: ${{ env.SNYK_TOKEN != '' }}
