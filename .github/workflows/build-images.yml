@@ -138,7 +138,7 @@ jobs:
 
       - name: Snyk scan
         id: snyk-scan
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@v2
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@v1
         with:
           subproject: ${{ matrix.dockerfile }}
           severity: high
@@ -150,7 +150,7 @@ jobs:
           image_ref: ${{ steps.snyk_image.outputs.image_ref }}
 
       - name: Snyk slack notification
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_snyk_scan_notification@v2
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_snyk_scan_notification@v1
         if: (failure() || steps.snyk-scan.outcome == 'failure' || fromJSON(steps.snyk-scan.outputs.results_count || '0') > 0) && (vars.SECURITY_ALERTS_SLACK_CHANNEL_ID || 'NO_SLACK') != 'NO_SLACK'
         with:
           title: 'Snyk'
