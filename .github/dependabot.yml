@@ -11,44 +11,23 @@ updates:
         update-types:
           - "version-update:semver-minor"
           - "version-update:semver-patch"
+      - dependency-name: "ministryofjustice/hmpps-github-shared-actions/*"
+        update-types:
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
+    groups:
+      github-actions-dependencies:
+        patterns:
+          - "*"
 
   - package-ecosystem: "docker"
-    directory: "/images/java/distroless"
-    schedule:
-      interval: "weekly"
-    cooldown:
-      default-days: 7
-
-  - package-ecosystem: "docker"
-    directory: "/images/java/eclipse-temurin"
-    schedule:
-      interval: "weekly"
-    cooldown:
-      default-days: 7
-
-  - package-ecosystem: "docker"
-    directory: "/images/node/alpine"
-    schedule:
-      interval: "weekly"
-    cooldown:
-      default-days: 7
-
-  - package-ecosystem: "docker"
-    directory: "/images/node/alpine-runtime"
-    schedule:
-      interval: "weekly"
-    cooldown:
-      default-days: 7
-
-  - package-ecosystem: "docker"
-    directory: "/images/node/distroless"
-    schedule:
-      interval: "weekly"
-    cooldown:
-      default-days: 7
-
-  - package-ecosystem: "docker"
-    directory: "/images/python/alpine"
+    directories:
+      - "/images/java/distroless"
+      - "/images/java/eclipse-temurin"
+      - "/images/node/alpine"
+      - "/images/node/alpine-runtime"
+      - "/images/node/distroless"
+      - "/images/python/alpine"
     schedule:
       interval: "weekly"
     cooldown:
