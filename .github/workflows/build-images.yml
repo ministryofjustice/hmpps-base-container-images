@@ -75,7 +75,7 @@ jobs:
     
     steps:
       - name: Check out the repo
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0
@@ -138,7 +138,7 @@ jobs:
 
       - name: Snyk scan
         id: snyk-scan
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@v1
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@v1.0.19
         with:
           subproject: ${{ matrix.dockerfile }}
           severity: high
@@ -150,7 +150,7 @@ jobs:
           image_ref: ${{ steps.snyk_image.outputs.image_ref }}
 
       - name: Snyk slack notification
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_snyk_scan_notification@v1
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_snyk_scan_notification@v1.0.19
         if: (failure() || steps.snyk-scan.outcome == 'failure' || fromJSON(steps.snyk-scan.outputs.results_count || '0') > 0) && (vars.SECURITY_ALERTS_SLACK_CHANNEL_ID || 'NO_SLACK') != 'NO_SLACK'
         with:
           title: 'Snyk'
