@@ -50,8 +50,13 @@ jobs:
             publish_latest: true
           - image_name: node
             context: images/node/alpine
-            dockerfile: images/node/alpine/Dockerfile
+            dockerfile: images/node/alpine/Dockerfile.node24-npm11
             tag_prefix: 24-alpine
+            publish_latest: false
+          - image_name: node
+            context: images/node/alpine
+            dockerfile: images/node/alpine/Dockerfile.node24-npm12
+            tag_prefix: 24-alpine-npm12
             publish_latest: false
           - image_name: node
             context: images/node/alpine-runtime
