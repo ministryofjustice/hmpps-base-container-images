@@ -27,7 +27,8 @@ ARG LIBSTDCXX_VERSION=15.2.0-r5
 # renovate: datasource=repology depName=alpine_3_24/tzdata versioning=loose
 ARG TZDATA_VERSION=2026c-r0
 
-RUN apk add --no-cache && npm install -g npm@12.0.2 && npm cache clean --force && \
+RUN apk update --no-cache -qq && \
+    apk upgrade --no-cache apk add --no-cache && npm install -g npm@12.0.2 && npm cache clean --force && \
     ca-certificates="${CA_CERTIFICATES_VERSION}" \
     libstdc++="${LIBSTDCXX_VERSION}" \
     tzdata="${TZDATA_VERSION}" && \
@@ -56,16 +57,6 @@ RUN ln -snf \
     && test ! -e /usr/local/bin/npx \
     && test ! -e /usr/local/bin/corepack \
     && test ! -d /usr/local/lib/node_modules
-
-
-
-# Security upgrades in separate stage for cache control
-# Build with: docker buildx build --no-cache-filter=security-upgrades ...
-FROM runtime AS security-upgrades
-RUN apk update --no-cache -qq && \
-    apk upgrade --no-cache && \
-    node --version && \
-    npm --version
 
 USER appuser
 WORKDIR /app
