@@ -28,10 +28,10 @@ ARG LIBSTDCXX_VERSION=15.2.0-r5
 ARG TZDATA_VERSION=2026c-r0
 
 RUN apk update --no-cache -qq && \
-    apk upgrade --no-cache && apk add --no-cache && \
-    ca-certificates="${CA_CERTIFICATES_VERSION}" \
-    libstdc++="${LIBSTDCXX_VERSION}" \
-    tzdata="${TZDATA_VERSION}" && \
+    apk upgrade --no-cache && apk add --no-cache \
+        ca-certificates="${CA_CERTIFICATES_VERSION}" \
+        libstdc++="${LIBSTDCXX_VERSION}" \
+        tzdata="${TZDATA_VERSION}" && \
     npm cache clean --force  && \
     addgroup \
         --gid "${APP_GID}" \
