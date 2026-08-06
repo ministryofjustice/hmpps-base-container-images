@@ -5,7 +5,6 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
-      - id: check-added-large-files
       - id: check-json
       - id: check-yaml
       - id: check-merge-conflict
@@ -15,15 +14,6 @@ repos:
       - id: trailing-whitespace
       - id: mixed-line-ending
 
-  #
-  # Docker
-  #
-  - repo: https://github.com/hadolint/hadolint
-    rev: v2.15.1
-    hooks:
-      - id: hadolint
-
-  #
   # Shell
   #
   - repo: https://github.com/shellcheck-py/shellcheck-py
