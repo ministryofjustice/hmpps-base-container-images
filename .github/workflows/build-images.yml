@@ -60,8 +60,12 @@ jobs:
             publish_latest: false
           - image_name: node
             context: images/node/alpine-runtime
-            dockerfile: images/node/alpine-runtime/Dockerfile
+            dockerfile: images/node/alpine-runtime/Dockerfile.node24-npm11
             tag_prefix: 24-alpine-runtime
+          - image_name: node
+            context: images/node/alpine-runtime
+            dockerfile: images/node/alpine-runtime/Dockerfile.node24-npm12
+            tag_prefix: 24-alpine-runtime-npm12
             publish_latest: true
           - image_name: distroless-node
             context: images/node/distroless
