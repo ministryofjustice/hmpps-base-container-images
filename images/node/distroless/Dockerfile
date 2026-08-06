@@ -21,7 +21,7 @@ LABEL org.opencontainers.image.description="Distroless runtime image for Node.js
 LABEL org.opencontainers.image.source="https://github.com/ministryofjustice/hmpps-base-container-images"
 LABEL org.opencontainers.image.vendor="Ministry of Justice"
 LABEL hmpps.node.base_variant="distroless"
-LABEL org.opencontainers.image.base.name="gcr.io/distroless/nodejs22-debian12:nonroot"
+LABEL org.opencontainers.image.base.name="gcr.io/distroless/nodejs22-debian13:nonroot"
 
 WORKDIR /app
 
