@@ -20,7 +20,8 @@ RUN chown -R 2000:2000 /app
 # Security upgrades in separate stage for cache control
 # Build with: docker buildx build --no-cache-filter=security-upgrades ...
 FROM base AS security-upgrades
-RUN apk upgrade --no-cache
+RUN apk upgrade --no-cache && \
+    apk add --no-cache --upgrade 'sqlite>=3.53.4-r0'
 
 # update PATH environment variable
 ENV PATH=/home/appuser/.local:/app:$PATH
