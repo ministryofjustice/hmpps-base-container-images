@@ -21,7 +21,8 @@ Java:
 - `25-jre` (distroless)
 
 Node:
-- `24-alpine`
+- `24-alpine` `npm 11.x`
+- `24-alpine-npm12` `npm 12.x`
 - `24-alpine-runtime` — same as `24-alpine` but with package managers (npm, yarn, corepack) removed
 - `24` (distroless)
 
