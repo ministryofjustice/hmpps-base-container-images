@@ -1,39 +1,69 @@
-# HMPPS Node.js Runtime Base Image
-FROM node:24-alpine AS base
+# syntax=docker/dockerfile:1
 
-# Metadata
+# HMPPS Node.js Runtime Base Image.
+# The digest must resolve to the intended Node 24 Alpine image.
+# Pinned to tag 24.19.0-alpine3.24 via sha.
+FROM node@sha256:d32cdf619f63fe0471182d08996dd516c6275bb5fd31ae06e55a570bd9e1ad43 AS base
+
 LABEL org.opencontainers.image.title="HMPPS Node.js Runtime Base Image"
-LABEL org.opencontainers.image.description="Runtime-only container image for Node.js applications in HMPPS (package managers removed)"
+LABEL org.opencontainers.image.description="Runtime-only container image for HMPPS Node.js applications with package managers removed"
 LABEL org.opencontainers.image.source="https://github.com/ministryofjustice/hmpps-base-container-images"
 LABEL org.opencontainers.image.vendor="Ministry of Justice"
-LABEL hmpps.node.base_variant="24-alpine"
-LABEL hmpps.node.base_image="node"
-LABEL org.opencontainers.image.base.name="node:24-alpine"
+LABEL org.opencontainers.image.base.name="alpine:3.24.1"
+LABEL hmpps.node.base_image="alpine"
+LABEL hmpps.node.base_variant="3.24.1"
 
-# Create non-root app user (consistent with Java images)
+FROM base AS runtime
+
 ARG APP_UID=2000
 ARG APP_GID=2000
-RUN addgroup -g ${APP_GID} -S appgroup && \
-    adduser -u ${APP_UID} -S appuser -G appgroup
 
-# Timezone setup (base image already includes tzdata and ca-certificates)
+# renovate: datasource=repology depName=alpine_3_24/ca-certificates versioning=loose
+ARG CA_CERTIFICATES_VERSION=20260611-r0
+
+# renovate: datasource=repology depName=alpine_3_24/libstdc++
+ARG LIBSTDCXX_VERSION=15.2.0-r5
+
+# renovate: datasource=repology depName=alpine_3_24/tzdata versioning=loose
+ARG TZDATA_VERSION=2026c-r0
+
+RUN apk update --no-cache -qq && \
+    apk upgrade --no-cache && apk add --no-cache \
+        ca-certificates="${CA_CERTIFICATES_VERSION}" \
+        libstdc++="${LIBSTDCXX_VERSION}" \
+        tzdata="${TZDATA_VERSION}" && \
+    addgroup \
+        --gid "${APP_GID}" \
+        --system \
+        appgroup \
+    && adduser \
+        --uid "${APP_UID}" \
+        --ingroup appgroup \
+        --shell /sbin/nologin \
+        --disabled-password \
+        --no-create-home \
+        --system \
+        appuser
+
+ENV NODE_ENV="production"
 ENV TZ="Europe/London"
-RUN ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezone
 
-# Remove package managers - not needed for production and reduces attack surface
-RUN rm -rf /usr/local/lib/node_modules \
-           /usr/local/bin/npm \
-           /usr/local/bin/npx \
-           /usr/local/bin/corepack \
-           /usr/local/bin/yarn \
-           /usr/local/bin/yarnpkg \
-           /opt/yarn-*
+RUN rm -f /usr/local/bin/npm \
+    && rm -f /usr/local/bin/npx \
+    && rm -f /usr/local/bin/corepack \
+    && rm -rf /usr/local/lib/node_modules && \
+    ln -snf \
+        "/usr/share/zoneinfo/${TZ}" \
+        /etc/localtime \
+    && echo "${TZ}" > /etc/timezone \
+    && node --version \
+    && test ! -e /usr/local/bin/npm \
+    && test ! -e /usr/local/bin/npx \
+    && test ! -e /usr/local/bin/corepack \
+    && test ! -d /usr/local/lib/node_modules
 
-# Security upgrades in separate stage for cache control
-# Build with: docker buildx build --no-cache-filter=security-upgrades ...
-FROM base AS security-upgrades
-RUN apk upgrade --no-cache
-
-# USER ${APP_UID}
-
+USER appuser
 WORKDIR /app
+
+ENTRYPOINT ["node"]
+CMD ["--version"]

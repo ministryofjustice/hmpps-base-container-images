@@ -50,8 +50,13 @@ jobs:
             publish_latest: true
           - image_name: node
             context: images/node/alpine
-            dockerfile: images/node/alpine/Dockerfile
+            dockerfile: images/node/alpine/Dockerfile.node24-npm11
             tag_prefix: 24-alpine
+            publish_latest: false
+          - image_name: node
+            context: images/node/alpine
+            dockerfile: images/node/alpine/Dockerfile.node24-npm12
+            tag_prefix: 24-alpine-npm12
             publish_latest: false
           - image_name: node
             context: images/node/alpine-runtime
@@ -72,7 +77,7 @@ jobs:
       contents: read
       packages: write
       security-events: write
-    
+
     steps:
       - name: Check out the repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
