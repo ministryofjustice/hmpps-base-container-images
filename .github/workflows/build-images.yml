@@ -20,7 +20,7 @@ concurrency:
 jobs:
   build-scan-push:
     name: Build-Scan-Push
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.02
     timeout-minutes: 20
     env:
       SNYK_TOKEN: ${{ secrets.HMPPS_SNYK_API_KEY }}
