@@ -32,7 +32,8 @@ RUN rm -rf /usr/local/lib/node_modules \
 # Security upgrades in separate stage for cache control
 # Build with: docker buildx build --no-cache-filter=security-upgrades ...
 FROM base AS security-upgrades
-RUN apk upgrade --no-cache
+RUN apk upgrade --no-cache && \
+    apk add --no-cache "expat>=2.8.5-r0"
 
 # USER ${APP_UID}
 
