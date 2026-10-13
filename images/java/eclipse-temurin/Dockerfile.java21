@@ -1,5 +1,5 @@
 # HMPPS Java Base Image (Eclipse Temurin Java 21)
-FROM eclipse-temurin:21-jre-jammy AS base
+FROM eclipse-temurin:22-jre-jammy AS base
 
 # Metadata
 LABEL org.opencontainers.image.title="HMPPS Java Base Image (Java 21)"
