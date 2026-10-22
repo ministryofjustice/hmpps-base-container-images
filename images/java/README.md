@@ -11,6 +11,10 @@ Standardized base image for JVM applications in HMPPS. Provides a consistent, le
 | hmpps-distroless-java | 21-jre | Distroless | amd64, arm64 | Minimal runtime footprint (no shell/package manager) |
 | hmpps-distroless-java | 25-jre | Distroless | amd64, arm64 | Minimal runtime footprint (no shell/package manager) |
 
+## Distrusted CAs
+
+The eMudhra CA keys were found to be trivially weak (October 2026). Java does not check revocation by default, so `images/java/eclipse-temurin/emudhra-distrust/` removes eMudhra roots from `cacerts` and adds the compromised intermediates to the JDK's `blocked.certs`. The Temurin images apply this at build time; it is idempotent, so it can be removed once upstream JDKs ship the Mozilla removal.
+
 ## Distroless Variant
 
 The distroless variants use Google's minimal distroless base images instead of full OS distributions, reducing attack surface and image size.
