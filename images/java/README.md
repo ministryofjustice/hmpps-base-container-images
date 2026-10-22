@@ -13,7 +13,9 @@ Standardized base image for JVM applications in HMPPS. Provides a consistent, le
 
 ## Distrusted CAs
 
-The eMudhra CA keys were found to be trivially weak (October 2026). Java does not check revocation by default, so `images/java/eclipse-temurin/emudhra-distrust/` removes eMudhra roots from `cacerts` and adds the compromised intermediates to the JDK's `blocked.certs`. The Temurin images apply this at build time; it is idempotent, so it can be removed once upstream JDKs ship the Mozilla removal.
+The eMudhra CA keys were found to be trivially weak (October 2026). Java does not check revocation by default, so both the Temurin and distroless images remove eMudhra roots from `cacerts` and add the compromised intermediates to the JDK's `blocked.certs`. The scripts live in `emudhra-distrust/` beside each image's Dockerfiles (duplicated deliberately, as this is a temporary workaround) and are idempotent, so they can be removed once upstream JDKs ship the Mozilla removal.
+
+Removing the roots is the effective control: `blocked.certs` matches exact certificate bytes, so a re-encoded copy of a blocked intermediate can still validate ([Sonatype](https://www.sonatype.com/blog/the-limits-of-fingerprint-blocklists-a-reproducible-java-certificate-bypass)). The blocklist is defence in depth.
 
 ## Distroless Variant
 
