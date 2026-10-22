@@ -1,5 +1,6 @@
 #!/bin/sh
-# Distrust eMudhra in the JDK: remove its roots from cacerts and block the compromised
+# Distrust eMudhra in the JDK: remove its roots, and Sectigo's AAA root (which cross-signs the
+# compromised intermediates), from cacerts and block the compromised
 # intermediates by fingerprint. Safe to keep once upstream JDKs drop the roots (idempotent).
 set -eu
 
@@ -14,7 +15,7 @@ BLOCKED="${JAVA_HOME}/lib/security/blocked.certs"
 list_emudhra() {
   listing=$(keytool -list -cacerts -storepass changeit)
   printf '%s\n' "$listing" |
-    { grep -i -E 'emudhra|emsign' || true; } |
+    { grep -i -E 'emudhra|emsign|aaa.certificate.services' || true; } |
     sed -E 's/, [A-Z][a-z]{2} [0-9]{1,2}, [0-9]{4}, trustedCertEntry,.*$//'
 }
 
