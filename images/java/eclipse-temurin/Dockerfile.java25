@@ -36,6 +36,10 @@ RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y upgrade && \
     apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Distrust eMudhra (compromised CA keys); the JDK's bundled cacerts still includes its roots
+COPY emudhra-distrust/ /tmp/emudhra-distrust/
+RUN sh /tmp/emudhra-distrust/distrust-emudhra.sh && rm -rf /tmp/emudhra-distrust
+
 # Sensible JVM defaults for containers
 ENV JAVA_TOOL_OPTIONS="-XX:+ExitOnOutOfMemoryError -XX:MaxRAMPercentage=50.0"
 

@@ -11,6 +11,12 @@ Standardized base image for JVM applications in HMPPS. Provides a consistent, le
 | hmpps-distroless-java | 21-jre | Distroless | amd64, arm64 | Minimal runtime footprint (no shell/package manager) |
 | hmpps-distroless-java | 25-jre | Distroless | amd64, arm64 | Minimal runtime footprint (no shell/package manager) |
 
+## Distrusted CAs
+
+The eMudhra CA keys were found to be trivially weak (October 2026). Java does not check revocation by default, so the Temurin and distroless images remove the `emSign ECC Root CA - G3` root from `cacerts` (Oracle's guidance) and add the compromised intermediates to the JDK's `blocked.certs`. Sectigo's `AAA Certificate Services` root, the other root Oracle lists, is not in these JDKs' `cacerts`. The scripts live in `emudhra-distrust/` beside each image's Dockerfiles (duplicated deliberately, as this is a temporary workaround) and are idempotent. Temurin 25.0.5 and 21.0.13 already drop the root, so remove the scripts once the upstream `eclipse-temurin` images are rebuilt on those versions.
+
+Removing the root is the effective control: `blocked.certs` matches exact certificate bytes, so a re-encoded copy of a blocked intermediate can still validate ([Sonatype](https://www.sonatype.com/blog/the-limits-of-fingerprint-blocklists-a-reproducible-java-certificate-bypass)). The blocklist is defence in depth.
+
 ## Distroless Variant
 
 The distroless variants use Google's minimal distroless base images instead of full OS distributions, reducing attack surface and image size.

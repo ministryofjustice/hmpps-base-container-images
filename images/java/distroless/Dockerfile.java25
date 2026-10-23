@@ -1,5 +1,7 @@
 # HMPPS Java Base Image (Distroless Java 25)
 
+FROM gcr.io/distroless/java25-debian13:nonroot AS distroless-java
+
 FROM debian:13 AS prep
 
 ARG APP_UID=2000
@@ -13,10 +15,22 @@ ADD https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /home/appu
 RUN chown appuser:appgroup /home/appuser/.postgresql/root.crt && \
     chmod 0644 /home/appuser/.postgresql/root.crt
 
+# Distrust eMudhra (compromised CA keys). The runtime image has no shell, so patch a copy of its
+# Temurin JRE and cacerts here, then copy the results into the runtime stage.
+ARG TARGETARCH
+ENV JAVA_HOME=/usr/lib/jvm/temurin-25-jre-${TARGETARCH}
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
+COPY --from=distroless-java /usr/lib/jvm/temurin-25-jre-${TARGETARCH} /usr/lib/jvm/temurin-25-jre-${TARGETARCH}
+COPY --from=distroless-java /etc/ssl/certs/java/cacerts /etc/ssl/certs/java/cacerts
+RUN mkdir -p /etc/ssl/certs/adoptium && ln -s /etc/ssl/certs/java/cacerts /etc/ssl/certs/adoptium/cacerts
+COPY emudhra-distrust/ /tmp/emudhra-distrust/
+RUN sh /tmp/emudhra-distrust/distrust-emudhra.sh
+
 FROM gcr.io/distroless/java25-debian13:nonroot AS runtime
 
 ARG APP_UID=2000
 ARG APP_GID=2000
+ARG TARGETARCH
 
 LABEL org.opencontainers.image.title="HMPPS Java Base Image (Distroless Java 25)"
 LABEL org.opencontainers.image.description="Distroless runtime image for Java 25 applications in HMPPS"
@@ -32,5 +46,7 @@ ENV TZ="Europe/London"
 ENV JAVA_TOOL_OPTIONS="-XX:+ExitOnOutOfMemoryError -XX:MaxRAMPercentage=50.0"
 
 COPY --from=prep --chown=${APP_UID}:${APP_GID} /home/appuser/.postgresql/root.crt /home/appuser/.postgresql/root.crt
+COPY --from=prep /etc/ssl/certs/java/cacerts /etc/ssl/certs/java/cacerts
+COPY --from=prep /usr/lib/jvm/temurin-25-jre-${TARGETARCH}/lib/security/blocked.certs /usr/lib/jvm/temurin-25-jre-${TARGETARCH}/lib/security/blocked.certs
 
 USER ${APP_UID}:${APP_GID}
