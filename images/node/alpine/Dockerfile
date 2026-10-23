@@ -16,7 +16,10 @@ ARG APP_GID=2000
 RUN addgroup -g ${APP_GID} -S appgroup && \
     adduser -u ${APP_UID} -S appuser -G appgroup
 
-# Timezone setup (base image already includes tzdata and ca-certificates)
+# Ensure timezone and certificate data are installed
+RUN apk add --no-cache tzdata ca-certificates
+
+# Timezone setup
 ENV TZ="Europe/London"
 RUN ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezone
 
