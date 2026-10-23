@@ -13,9 +13,9 @@ Standardized base image for JVM applications in HMPPS. Provides a consistent, le
 
 ## Distrusted CAs
 
-The eMudhra CA keys were found to be trivially weak (October 2026). Java does not check revocation by default, so both the Temurin and distroless images remove eMudhra roots from `cacerts` and add the compromised intermediates to the JDK's `blocked.certs`. The scripts live in `emudhra-distrust/` beside each image's Dockerfiles (duplicated deliberately, as this is a temporary workaround) and are idempotent, so they can be removed once upstream JDKs ship the Mozilla removal.
+The eMudhra CA keys were found to be trivially weak (October 2026). Java does not check revocation by default, so the Temurin and distroless images remove the `emSign ECC Root CA - G3` root from `cacerts` (Oracle's guidance) and add the compromised intermediates to the JDK's `blocked.certs`. Sectigo's `AAA Certificate Services` root, the other root Oracle lists, is not in these JDKs' `cacerts`. The scripts live in `emudhra-distrust/` beside each image's Dockerfiles (duplicated deliberately, as this is a temporary workaround) and are idempotent. Temurin 25.0.5 and 21.0.13 already drop the root, so remove the scripts once the upstream `eclipse-temurin` images are rebuilt on those versions.
 
-Removing the roots is the effective control: `blocked.certs` matches exact certificate bytes, so a re-encoded copy of a blocked intermediate can still validate ([Sonatype](https://www.sonatype.com/blog/the-limits-of-fingerprint-blocklists-a-reproducible-java-certificate-bypass)). The blocklist is defence in depth.
+Removing the root is the effective control: `blocked.certs` matches exact certificate bytes, so a re-encoded copy of a blocked intermediate can still validate ([Sonatype](https://www.sonatype.com/blog/the-limits-of-fingerprint-blocklists-a-reproducible-java-certificate-bypass)). The blocklist is defence in depth.
 
 ## Distroless Variant
 
