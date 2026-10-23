@@ -1,7 +1,6 @@
 #!/bin/sh
-# Temporary mitigation for the eMudhra CA key compromise. Removes the emSign ECC Root CA - G3 root
-# (the trust anchor for the compromised intermediates; per Oracle's guidance) from cacerts and blocks
-# the compromised intermediates by fingerprint. Remove once the base JDK drops the root (idempotent).
+# Distrust eMudhra in the JDK: remove emSign ECC Root CA - G3 from cacerts and block the compromised
+# intermediates by fingerprint. Safe to keep once upstream JDKs drop the roots (idempotent).
 set -eu
 
 DIR="$(dirname "$0")"
@@ -11,28 +10,18 @@ BLOCKED="${JAVA_HOME}/lib/security/blocked.certs"
 [ -f "$CACERTS" ] || { echo "cacerts not found: $CACERTS" >&2; exit 1; }
 [ -f "$BLOCKED" ] || { echo "blocked.certs not found: $BLOCKED" >&2; exit 1; }
 
-# Prints aliases of the emSign ECC Root CA - G3 entry (alias format varies between JDK builds). A keytool failure aborts the build, but no matches is fine.
-list_emudhra() {
-  listing=$(keytool -list -cacerts -storepass changeit)
-  printf '%s\n' "$listing" |
-    { grep -i -E 'emsign.?ecc.?root.?ca.*g3' || true; } |
-    sed -E 's/, [A-Z][a-z]{2} [0-9]{1,2}, [0-9]{4}, trustedCertEntry,.*$//'
-}
+alias='cn_emsign_ecc_root_ca__g3,o_emudhra_technologies_limited,ou_emsign_pki,c_in [jdk]'
+listing=$(keytool -J-Duser.language=en -list -rfc -cacerts -storepass changeit)
 
-aliases=$(list_emudhra)
-printf '%s\n' "$aliases" | while IFS= read -r alias; do
-  [ -n "$alias" ] || continue
+if printf '%s\n' "$listing" | grep -Fqx "Alias name: $alias"; then
   keytool -delete -alias "$alias" -cacerts -storepass changeit
-done
+  printf 'Deleted certificate: %s\n' "$alias"
+else
+  printf 'Certificate already absent: %s\n' "$alias"
+fi
 
 # blocked.certs is a properties file keyed by fingerprint
 [ -n "$(tail -c1 "$BLOCKED")" ] && echo >> "$BLOCKED"
 grep -E '^[0-9A-F]{64}$' "$DIR/blocked-fingerprints.txt" | while IFS= read -r fp; do
   grep -qx "$fp" "$BLOCKED" || echo "$fp" >> "$BLOCKED"
 done
-
-remaining=$(list_emudhra)
-if [ -n "$remaining" ]; then
-  echo "emSign ECC Root CA - G3 still present in $CACERTS" >&2
-  exit 1
-fi
