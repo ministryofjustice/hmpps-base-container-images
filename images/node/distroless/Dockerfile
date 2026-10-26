@@ -11,7 +11,7 @@ ADD https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /home/appu
 RUN chown appuser:appgroup /home/appuser/.postgresql/root.crt && \
     chmod 0644 /home/appuser/.postgresql/root.crt
 
-FROM gcr.io/distroless/nodejs22-debian13:nonroot AS runtime
+FROM gcr.io/distroless/nodejs24-debian13:nonroot AS runtime
 
 ARG APP_UID=2000
 ARG APP_GID=2000
@@ -21,7 +21,7 @@ LABEL org.opencontainers.image.description="Distroless runtime image for Node.js
 LABEL org.opencontainers.image.source="https://github.com/ministryofjustice/hmpps-base-container-images"
 LABEL org.opencontainers.image.vendor="Ministry of Justice"
 LABEL hmpps.node.base_variant="distroless"
-LABEL org.opencontainers.image.base.name="gcr.io/distroless/nodejs22-debian12:nonroot"
+LABEL org.opencontainers.image.base.name="gcr.io/distroless/nodejs24-debian13:nonroot"
 
 WORKDIR /app
 
