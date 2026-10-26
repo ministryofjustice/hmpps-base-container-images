@@ -16,8 +16,8 @@ ARG APP_GID=2000
 RUN addgroup -g ${APP_GID} -S appgroup && \
     adduser -u ${APP_UID} -S appuser -G appgroup
 
-# Ensure timezone and certificate data are installed
-RUN apk add --no-cache tzdata ca-certificates
+# Install timezone data
+RUN apk add --no-cache tzdata
 
 # Timezone setup
 ENV TZ="Europe/London"
