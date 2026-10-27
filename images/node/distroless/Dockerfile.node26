@@ -25,7 +25,12 @@ LABEL org.opencontainers.image.base.name="gcr.io/distroless/nodejs26-debian13:no
 
 WORKDIR /app
 
+# Install timezone data
+RUN apk add --no-cache tzdata
+
+# Timezone setup
 ENV TZ="Europe/London"
+RUN ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezone
 ENV NODE_ENV="production"
 
 COPY --from=prep --chown=${APP_UID}:${APP_GID} /home/appuser/.postgresql/root.crt /home/appuser/.postgresql/root.crt
