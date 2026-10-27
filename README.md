@@ -8,8 +8,8 @@ Lean, security-focused base images for Java (Temurin and distroless), Node.js (A
 |--------------|------------|--------------|
 | Java (Temurin JRE) | `ghcr.io/ministryofjustice/hmpps-eclipse-temurin` | `docker pull ghcr.io/ministryofjustice/hmpps-eclipse-temurin:21-jre-jammy` |
 | Java (Distroless) | `ghcr.io/ministryofjustice/hmpps-distroless-java` | `docker pull ghcr.io/ministryofjustice/hmpps-distroless-java:25-jre` |
-| Node.js (Alpine) | `ghcr.io/ministryofjustice/hmpps-node` | `docker pull ghcr.io/ministryofjustice/hmpps-node:24-alpine` |
-| Node.js (Distroless) | `ghcr.io/ministryofjustice/hmpps-distroless-node` | `docker pull ghcr.io/ministryofjustice/hmpps-distroless-node:24` |
+| Node.js (Alpine) | `ghcr.io/ministryofjustice/hmpps-node` | `docker pull ghcr.io/ministryofjustice/hmpps-node:24-alpine` or `docker pull ghcr.io/ministryofjustice/hmpps-node:26-alpine` |
+| Node.js (Distroless) | `ghcr.io/ministryofjustice/hmpps-distroless-node` | `docker pull ghcr.io/ministryofjustice/hmpps-distroless-node:24` or `docker pull ghcr.io/ministryofjustice/hmpps-distroless-node:26` |
 | Python | `ghcr.io/ministryofjustice/hmpps-python` | `docker pull ghcr.io/ministryofjustice/hmpps-python:python3.13-alpine` |
 
 ## Variants
@@ -24,6 +24,9 @@ Node:
 - `24-alpine`
 - `24-alpine-runtime` — same as `24-alpine` but with package managers (npm, yarn, corepack) removed
 - `24` (distroless)
+- `26-alpine`
+- `26-alpine-runtime` — same as `26-alpine` but with package managers (npm, yarn, corepack) removed
+- `26` (distroless)
 
 Python:
 - `python3.13-alpine`

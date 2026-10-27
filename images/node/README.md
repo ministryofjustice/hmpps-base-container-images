@@ -9,6 +9,9 @@ Lean, standardized Node.js base for HMPPS apps across Alpine and distroless vari
 | `hmpps-node` | `24-alpine` | Full Node.js 24 Alpine image including npm, yarn, and corepack |
 | `hmpps-node` | `24-alpine-runtime` | Runtime-only image with package managers removed for production |
 | `hmpps-distroless-node` | `24` | Distroless runtime image with Node.js only — minimal attack surface (no shell/package manager) |
+| `hmpps-node` | `26-alpine` | Full Node.js 26 Alpine image including npm, yarn, and corepack |
+| `hmpps-node` | `26-alpine-runtime` | Runtime-only image with package managers removed for production |
+| `hmpps-distroless-node` | `26` | Distroless runtime image with Node.js only — minimal attack surface (no shell/package manager) |
 
 ## Distroless Variant
 
@@ -22,7 +25,7 @@ The distroless variant uses Google's minimal distroless base image, reducing att
 
 ## Features
 
-- Node.js 24 variants for Alpine and distroless runtimes
+- Node.js 24 and 26 variants for Alpine and distroless runtimes
 - Non‑root user `appuser` (UID/GID 2000) and `WORKDIR /app`
 - Timezone: `Europe/London`
 - Security upgrades stage for Alpine variants (`apk upgrade --no-cache`)
@@ -35,8 +38,8 @@ Registries:
 
 Common tags:
 
-- `hmpps-node`: `24-alpine`, `24-alpine-runtime`, date tags (YYYYMMDD), `latest`
-- `hmpps-distroless-node`: `24`, date tags (YYYYMMDD), `latest`
+- `hmpps-node`: `24-alpine`, `24-alpine-runtime`, `26-alpine`, `26-alpine-runtime`, date tags (YYYYMMDD), `latest`
+- `hmpps-distroless-node`: `24`, `26`, date tags (YYYYMMDD), `latest`
 
 Current latest mappings in CI:
 

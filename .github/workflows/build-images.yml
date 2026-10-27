@@ -54,15 +54,30 @@ jobs:
             tag_prefix: 24-alpine
             publish_latest: false
           - image_name: node
+            context: images/node/alpine
+            dockerfile: images/node/alpine/Dockerfile.node26
+            tag_prefix: 26-alpine
+            publish_latest: false
+          - image_name: node
             context: images/node/alpine-runtime
             dockerfile: images/node/alpine-runtime/Dockerfile
             tag_prefix: 24-alpine-runtime
             publish_latest: true
+          - image_name: node
+            context: images/node/alpine-runtime
+            dockerfile: images/node/alpine-runtime/Dockerfile.node26
+            tag_prefix: 26-alpine-runtime
+            publish_latest: false
           - image_name: distroless-node
             context: images/node/distroless
             dockerfile: images/node/distroless/Dockerfile
             tag_prefix: 24
             publish_latest: true
+          - image_name: distroless-node
+            context: images/node/distroless
+            dockerfile: images/node/distroless/Dockerfile.node26
+            tag_prefix: 26
+            publish_latest: false
           - image_name: python
             context: images/python/alpine
             dockerfile: images/python/alpine/Dockerfile
