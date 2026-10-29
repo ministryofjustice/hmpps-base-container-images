@@ -10,7 +10,7 @@ Lean, security-focused base images for Java (Temurin and distroless), Node.js (A
 | Java (Distroless) | `ghcr.io/ministryofjustice/hmpps-distroless-java` | `docker pull ghcr.io/ministryofjustice/hmpps-distroless-java:25-jre` |
 | Node.js (Alpine) | `ghcr.io/ministryofjustice/hmpps-node` | `docker pull ghcr.io/ministryofjustice/hmpps-node:24-alpine` or `docker pull ghcr.io/ministryofjustice/hmpps-node:26-alpine` |
 | Node.js (Distroless) | `ghcr.io/ministryofjustice/hmpps-distroless-node` | `docker pull ghcr.io/ministryofjustice/hmpps-distroless-node:24` or `docker pull ghcr.io/ministryofjustice/hmpps-distroless-node:26` |
-| Python | `ghcr.io/ministryofjustice/hmpps-python` | `docker pull ghcr.io/ministryofjustice/hmpps-python:python3.13-alpine` |
+| Python | `ghcr.io/ministryofjustice/hmpps-python` | `docker pull ghcr.io/ministryofjustice/hmpps-python:python3.14-alpine` |
 
 ## Variants
 
@@ -30,6 +30,7 @@ Node:
 
 Python:
 - `python3.13-alpine`
+- `python3.14-alpine`
 
 All images are built multi-arch: `linux/amd64` and `linux/arm64`.
 
