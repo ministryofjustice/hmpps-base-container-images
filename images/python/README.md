@@ -7,6 +7,7 @@ Lean, standardized Python base image for HMPPS apps.
 | Image | Variant Tag | OS | Arch (multi-platform) | Notes |
 |-------|-------------|----|-----------------------|-------|
 | hmpps-python | python3.13-alpine | Alpine | amd64, arm64 | Lightweight runtime with uv preinstalled |
+| hmpps-python | python3.14-alpine | Alpine | amd64, arm64 | Lightweight runtime with uv preinstalled |
 
 
 ## Features
@@ -18,16 +19,16 @@ Lean, standardized Python base image for HMPPS apps.
 
 Registry: `ghcr.io/ministryofjustice/hmpps-python`
 
-Common tags: `python3.13-alpine`, date tags (YYYYMMDD), `latest`
+Common tags: `python3.13-alpine`, `python3.14-alpine`, date tags (YYYYMMDD), `latest`
 
 Current latest mapping in CI:
 
-- `ghcr.io/ministryofjustice/hmpps-python:latest` -> `python3.13-alpine`
+- `ghcr.io/ministryofjustice/hmpps-python:latest` -> `python3.14-alpine`
 
 ## Usage (simple)
 
 ```dockerfile
-FROM ghcr.io/ministryofjustice/hmpps-python:python3.13-alpine
+FROM ghcr.io/ministryofjustice/hmpps-python:python3.14-alpine
 WORKDIR /app
 
 COPY --chown=appuser:appgroup . .
@@ -43,7 +44,7 @@ CMD ["python", "-m", "your_app"]
 
 ```dockerfile
 # Base (provides non-root user, TZ Europe/London, security upgrades)
-FROM ghcr.io/ministryofjustice/hmpps-python:python3.13-alpine AS base
+FROM ghcr.io/ministryofjustice/hmpps-python:python3.14-alpine AS base
 
 # Optional build metadata
 ARG BUILD_NUMBER

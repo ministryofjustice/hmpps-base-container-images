@@ -82,6 +82,11 @@ jobs:
             context: images/python/alpine
             dockerfile: images/python/alpine/Dockerfile
             tag_prefix: python3.13-alpine
+            publish_latest: false
+          - image_name: python
+            context: images/python/alpine
+            dockerfile: images/python/alpine/Dockerfile.python314
+            tag_prefix: python3.14-alpine
             publish_latest: true
     permissions:
       contents: read
