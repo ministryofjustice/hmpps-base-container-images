@@ -41,6 +41,6 @@ COPY emudhra-distrust/ /tmp/emudhra-distrust/
 RUN sh /tmp/emudhra-distrust/distrust-emudhra.sh && rm -rf /tmp/emudhra-distrust
 
 # Sensible JVM defaults for containers
-ENV JAVA_TOOL_OPTIONS="-XX:+ExitOnOutOfMemoryError -XX:MaxRAMPercentage=50.0"
+ENV JAVA_TOOL_OPTIONS="-XX:+ExitOnOutOfMemoryError -XX:MaxRAMPercentage=50.0 -XX:-UseBASE64Intrinsics"
 
 USER ${APP_UID}
