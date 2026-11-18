@@ -1,5 +1,5 @@
 # HMPPS Node.js Runtime Base Image (Distroless)
-FROM node:24-bookworm-slim AS prep
+FROM node:25-bookworm-slim AS prep
 
 ARG APP_UID=2000
 ARG APP_GID=2000
