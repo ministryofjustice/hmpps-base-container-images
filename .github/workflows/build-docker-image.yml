@@ -1,0 +1,132 @@
+name: Build Docker Image
+
+on:
+  workflow_call:
+    inputs:
+      image_name:
+        required: true
+        type: string
+      flavour:
+        required: true
+        type: string
+      context:
+        required: true
+        type: string
+      dockerfile:
+        required: true
+        type: string
+      tag_prefix:
+        required: true
+        type: string
+      publish_latest:
+        required: true
+        type: boolean
+      registry:
+        required: true
+        type: string
+    secrets:
+      HMPPS_SNYK_API_KEY:
+        required: false
+      HMPPS_SRE_SLACK_BOT_TOKEN:
+        required: false
+
+jobs:
+  build:
+    name: Build-Scan-Push
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SNYK_TOKEN: ${{ secrets.HMPPS_SNYK_API_KEY }}
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ${{ inputs.registry }}/${{ github.repository_owner }}/hmpps-${{ inputs.image_name }}
+          flavor: |
+            latest=false
+          tags: |
+            # Prefix dynamic tags with the variant to prevent overwrites between matrix entries
+            type=schedule,pattern={{date 'YYYYMMDD'}},prefix=${{ inputs.tag_prefix }}-
+            type=ref,event=branch,prefix=${{ inputs.tag_prefix }}-
+            type=ref,event=tag,prefix=${{ inputs.tag_prefix }}-
+            type=ref,event=pr,prefix=${{ inputs.tag_prefix }}-
+            type=sha,prefix=${{ inputs.tag_prefix }}-
+            type=raw,value=${{ inputs.tag_prefix }}
+            type=raw,value=latest,enable=${{ inputs.publish_latest }}
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ${{ inputs.registry }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push container image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: ./${{ inputs.context }}
+          file: ./${{ inputs.dockerfile }}
+          # main/scheduled builds publish multi-arch images; PR builds stay amd64-only
+          # so the image can be loaded locally on the amd64 GitHub runner for Snyk scanning.
+          platforms: ${{ (github.ref == 'refs/heads/main' || github.event_name == 'schedule') && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
+          pull: true
+          push: ${{ github.ref == 'refs/heads/main' || github.event_name == 'schedule' }}
+          load: ${{ !(github.ref == 'refs/heads/main' || github.event_name == 'schedule') }}
+          # main/scheduled builds use metadata-action tags and push to GHCR.
+          # PR builds use a local-only snyk-scan:* tag (not pushed) for container scanning.
+          tags: ${{ (github.ref == 'refs/heads/main' || github.event_name == 'schedule') && steps.meta.outputs.tags || format('snyk-scan:{0}-{1}', inputs.image_name, inputs.tag_prefix) }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          no-cache-filters: security-upgrades
+
+      - name: Resolve image reference for Snyk scan
+        id: snyk_image
+        run: |
+          # Scan the pushed GHCR tag on main/schedule; otherwise scan the local PR image tag.
+          if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.event_name }}" == "schedule" ]]; then
+            echo "image_ref=${{ inputs.registry }}/${{ github.repository_owner }}/hmpps-${{ inputs.image_name }}:${{ inputs.tag_prefix }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "image_ref=snyk-scan:${{ inputs.image_name }}-${{ inputs.tag_prefix }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Snyk scan
+        id: snyk-scan
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@v1
+        with:
+          subproject: ${{ inputs.dockerfile }}
+          severity: high
+          scan_type: image
+          location: '.'
+          snyk_policy_path: ''
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          snyk_token: ${{ secrets.HMPPS_SNYK_API_KEY }}
+          image_ref: ${{ steps.snyk_image.outputs.image_ref }}
+
+      - name: Snyk slack notification
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_snyk_scan_notification@v1
+        if: (failure() || steps.snyk-scan.outcome == 'failure' || fromJSON(steps.snyk-scan.outputs.results_count || '0') > 0) && (vars.SECURITY_ALERTS_SLACK_CHANNEL_ID || 'NO_SLACK') != 'NO_SLACK'
+        with:
+          title: 'Snyk'
+          warningOnly: ${{ steps.snyk-scan.outputs.sarif_upload_outcome == 'success' }}
+          channel_id: ${{ vars.SECURITY_ALERTS_SLACK_CHANNEL_ID || 'NO_SLACK' }}
+          SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
+          subproject: ''
+          scan_context: image-${{ github.ref_name }}
+          image_ref: ${{ steps.snyk_image.outputs.image_ref }}
+          summary: ${{ steps.snyk-scan.outputs.summary }}

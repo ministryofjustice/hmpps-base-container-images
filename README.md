@@ -56,6 +56,16 @@ The `:latest` tag is selectively enabled per matrix entry in CI. Consumers shoul
 
 ## Upgrading Base Versions (Workflow-Only)
 
+The [caller workflow](.github/workflows/build-images.yml) owns the events,
+concurrency and image matrix. Each row calls the
+[reusable Docker workflow](.github/workflows/build-docker-image.yml), which
+builds, tags, scans and sends notifications for that image.
+
+The `flavour` field describes build or runtime use; it does not change tags or
+image contents. Repository names and tags still come from `image_name` and
+`tag_prefix`. All current variants use Docker; future backends can be added
+separately without changing the existing tag contract.
+
 To upgrade image versions, update the matrix in `.github/workflows/build-images.yml` instead of editing Dockerfiles.
 
 The workflow matrix controls:
@@ -64,11 +74,13 @@ The workflow matrix controls:
 - `dockerfile`: Dockerfile path
 - `tag_prefix`: raw variant tag and prefix for dynamic tags
 - `publish_latest`: whether to publish `latest` for that matrix entry
+- `flavour`: descriptive `build` or `runtime` classification
 
 Example matrix entry:
 
 ```yaml
 - image_name: eclipse-temurin
+  flavour: runtime
   context: images/java/eclipse-temurin
   dockerfile: images/java/eclipse-temurin/Dockerfile.java25
   tag_prefix: 25-jre-jammy
@@ -84,6 +96,21 @@ When moving to a new tag, verify:
 - The upstream tag in the Dockerfile `FROM` exists and is supported for your target architecture (`linux/amd64`, `linux/arm64`).
 - The selected `context`/`dockerfile` paths match repository layout.
 - Consumers pin to the explicit variant tag (for example `25-jre-jammy`) rather than relying on `latest`.
+
+Run the workflow contract tests from the repository root:
+
+```sh
+ruby tests/build-workflow_test.rb
+```
+
+PRs and non-main manual runs remain local AMD64 builds; main and weekday
+scheduled runs publish AMD64/ARM64 images. Reusable workflow extraction changes
+displayed job/check names: before merging, compare the new CI check names with
+any required branch-protection checks and coordinate updates with maintainers.
+Exercise the split with a PR or a manual run on a feature branch, not main
+(manual runs on main still publish). After the run, list its check names with
+`gh run view <run-id> --json jobs --jq '.jobs[].name'` and confirm all 11 variants
+build and scan without publishing before updating any required checks.
 
 ## Security Upgrades
 

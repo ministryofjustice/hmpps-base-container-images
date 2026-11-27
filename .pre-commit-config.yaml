@@ -1,0 +1,25 @@
+# Pre-commit hook configuration file
+#
+# This contains the list of hooks to be run before committing code.
+# Other hooks maybe added or removed as needed to suit individual project requirements.
+fail_fast: true
+repos:
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.9
+    hooks:
+      - id: actionlint
+
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.14.0
+    hooks:
+      - id: hadolint
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-json
+      - id: check-yaml
+        exclude: ^helm_deploy/[^/]+/templates/
+      - id: check-merge-conflict
